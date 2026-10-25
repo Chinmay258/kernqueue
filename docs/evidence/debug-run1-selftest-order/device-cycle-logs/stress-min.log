@@ -1,0 +1,1 @@
+test_stress: PASS 400000 records (1562.5 MiB) in 47.17 s, 4x4, 4096 B, blocking, waits r/w 375382/375262, eagain r/w 0/0

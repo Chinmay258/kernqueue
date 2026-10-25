@@ -101,28 +101,50 @@ device, writes, reads, and issues `GET_STATS`, unknown and bad-pointer ioctls
 through `compat_sys_ioctl()` → `compat_ptr_ioctl()`. It's part of the device
 cycle on x86-64 hosts.
 
-### Kernel sanitizers: lockdep, KASAN, KCSAN, DEBUG_ATOMIC_SLEEP (not run)
-None of these are enabled in the stock WSL kernel (checked in
-`/proc/config.gz`). They are the most valuable next step:
+### Kernel sanitizers: lockdep, DEBUG_ATOMIC_SLEEP, KASAN (used); KCSAN (not run)
+None of these are enabled in the stock WSL kernel, so a debug variant was
+built and booted:
 
-| Option | Would catch |
+| Option | Catches |
 |---|---|
-| `CONFIG_PROVE_LOCKING` (lockdep) | lock-order problems, and makes `lockdep_assert_held()` live |
-| `CONFIG_DEBUG_ATOMIC_SLEEP` | sleeping (e.g. `copy_to_user`) inside atomic context |
-| `CONFIG_KASAN` | out-of-bounds / use-after-free on the ring buffer |
-| `CONFIG_KCSAN` | unmarked data races (e.g. if a `READ_ONCE` were removed) |
-| `CONFIG_DEBUG_MUTEXES`, `CONFIG_DEBUG_SPINLOCK` | mutex misuse |
+| `CONFIG_PROVE_LOCKING` (lockdep, plus `DEBUG_MUTEXES`, `DEBUG_SPINLOCK`, `DEBUG_LOCK_ALLOC`) | lock-order inversions, invalid wait contexts, and makes `lockdep_assert_held()` live |
+| `CONFIG_DEBUG_ATOMIC_SLEEP` | anything that may sleep (e.g. `copy_to_user`) in atomic context |
+| `CONFIG_KASAN` (generic, outline) + `KASAN_VMALLOC` | out-of-bounds and use-after-free, including on the vmalloc'd 16 MiB ring |
+| `CONFIG_DEBUG_LIST` | corrupted list operations (wait queues are lists) |
+| `CONFIG_KCSAN` | data races. **Not run**: mutually exclusive with KASAN, so it needs a second kernel |
 
-How to get them on WSL (changes system configuration):
-1. In the prepared tree: `scripts/config -e PROVE_LOCKING -e DEBUG_ATOMIC_SLEEP
-   -e KASAN -e KCSAN` (KASAN and KCSAN are mutually exclusive; build two
-   kernels), then `make olddefconfig && make -j$(nproc)`.
-2. Copy `arch/x86/boot/bzImage` to Windows and point `%UserProfile%\.wslconfig`
-   at it: `[wsl2]` / `kernel=C:\\path\\to\\bzImage`.
-3. `wsl --shutdown`, restart, rebuild the module against that tree, and run
-   `make check-device`.
+Steps (they change system configuration):
+1. `scripts/prepare_debug_kdir.sh`: git worktree of the stock tree, the
+   options above, release `...-kqdebug`, builds `bzImage` (~20 min).
+2. Copy `arch/x86/boot/bzImage` to Windows and create
+   `%UserProfile%\.wslconfig` with `[wsl2]` / `kernel=C:\\path\\to\\bzImage`.
+   Then `wsl --shutdown`.
+3. `scripts/run_debug_checks.sh`: builds kernqueue against the debug tree,
+   runs the full device cycle, checks lockdep stayed on and tracked
+   kernqueue's locks, then loads `tests/debugcheck/kq_debugcheck.ko` three
+   times to trigger one deliberate bug per checker and require each report.
+4. Delete `.wslconfig` and `wsl --shutdown` to return to the stock kernel.
 
-A disposable QEMU VM with a debug kernel is the cleaner alternative.
+**Result (debug run 2, docs/evidence/debug-run2):** the whole device cycle
+passed with no lockdep, KASAN, sleep-in-atomic or list report. Lockdep stayed
+on and listed `&kq.lock`, `&kq.readq` and `&kq.writeq`. All three
+deliberate bugs were reported (circular locking, sleeping in invalid context,
+`slab-out-of-bounds`).
+
+**Self-test ordering matters.** Any lockdep report switches lockdep off for
+the rest of the boot. The `atomic_sleep` self-test produces one too: lockdep
+reports "Invalid wait context" because `might_fault()` takes `mmap_lock`, a
+sleeping lock, under the spinlock. Run in that order first, it silenced the
+`lock_order` test (debug run 1). The script now runs `lock_order` first and
+asserts `debug_locks=1` just before it.
+
+The debug kernel also printed boot-time lockdep assertion warnings from
+**Xwayland** (WSLg: `remap_pfn_range` without the mmap write lock). That is
+unrelated to kernqueue and logged before the test marker. These were plain
+`WARN`s, which leave lockdep on (`debug_locks` stayed 1).
+
+A disposable QEMU VM with a debug kernel is the cleaner alternative to
+swapping the WSL kernel.
 
 ## When a test fails
 

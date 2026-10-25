@@ -1,0 +1,111 @@
+[  433.147274] kq-debugcheck-atomic_sleep-1792908405318241731
+[  433.247156] BUG: sleeping function called from invalid context at <home>/.cache/kernqueue-debugcheck/kq_debugcheck.c:44
+[  433.247904] in_atomic(): 1, irqs_disabled(): 0, non_block: 0, pid: 2498, name: insmod
+[  433.248318] preempt_count: 1, expected: 0
+[  433.248560] RCU nest depth: 0, expected: 0
+[  433.248792] INFO: lockdep is turned off.
+[  433.249016] Preemption disabled at:
+[  433.249021] [<ffffffffc033f025>] kqd_atomic_sleep+0x15/0x40 [kq_debugcheck]
+[  433.249605] CPU: 4 PID: 2498 Comm: insmod Tainted: G        W  O       6.6.87.1-microsoft-standard-WSL2-kqdebug #1
+[  433.250176] Call Trace:
+[  433.250320]  <TASK>
+[  433.250478]  dump_stack_lvl+0x83/0xa0
+[  433.250710]  dump_stack+0x14/0x20
+[  433.250942]  __might_resched+0x239/0x370
+[  433.251164]  __might_sleep+0x6a/0xc0
+[  433.251380]  __might_fault+0x58/0xd0
+[  433.251605]  ? __pfx_kqd_init+0x10/0x10 [kq_debugcheck]
+[  433.251895]  kqd_atomic_sleep+0x26/0x40 [kq_debugcheck]
+[  433.252201]  kqd_init+0x8b/0xff0 [kq_debugcheck]
+[  433.252490]  do_one_initcall+0xd0/0x410
+[  433.252708]  ? __pfx_do_one_initcall+0x10/0x10
+[  433.253022]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.253374]  ? kasan_set_track+0x29/0x40
+[  433.253619]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.253911]  ? kasan_poison+0x3e/0x60
+[  433.254153]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.254467]  ? kasan_unpoison+0x2c/0x60
+[  433.254690]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.254976]  ? kasan_poison+0x3e/0x60
+[  433.255190]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.255473]  ? __asan_register_globals+0x62/0x80
+[  433.255772]  do_init_module+0x149/0x3f0
+[  433.256003]  load_module+0x3194/0x3500
+[  433.256273]  ? __pfx_load_module+0x10/0x10
+[  433.256513]  ? __pfx_ima_post_read_file+0x10/0x10
+[  433.256884]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.257178]  ? security_kernel_post_read_file+0x71/0x80
+[  433.257495]  ? __kasan_check_write+0x18/0x20
+[  433.257792]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.258090]  ? kernel_read_file+0x1f2/0x4a0
+[  433.258323]  ? __pfx_kernel_read_file+0x10/0x10
+[  433.258628]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.258923]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.259209]  ? rcu_is_watching+0x3e/0x70
+[  433.259434]  init_module_from_file+0xea/0x140
+[  433.259729]  ? init_module_from_file+0xea/0x140
+[  433.260042]  ? __pfx_init_module_from_file+0x10/0x10
+[  433.260354]  ? rcu_is_watching+0x3e/0x70
+[  433.260578]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.260857]  ? lock_release+0xcf/0x420
+[  433.261088]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.261377]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.261667]  ? do_raw_spin_unlock+0xb1/0x110
+[  433.261943]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.262232]  idempotent_init_module+0x2c3/0x420
+[  433.262546]  ? __pfx_idempotent_init_module+0x10/0x10
+[  433.262856]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.263158]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.263465]  ? __kasan_check_read+0x15/0x20
+[  433.263699]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.263998]  ? __fget_light+0xe9/0x110
+[  433.264227]  __x64_sys_finit_module+0x82/0xe0
+[  433.264528]  x64_sys_call+0xc26/0x2020
+[  433.264765]  do_syscall_64+0x5a/0x90
+[  433.264998]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.265288]  ? __x64_sys_openat+0xea/0x170
+[  433.265507]  ? __pfx___x64_sys_openat+0x10/0x10
+[  433.265792]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.266106]  ? local_irq_disable_exit_to_user+0x23/0x30
+[  433.266399]  ? syscall_exit_to_user_mode+0x24/0x50
+[  433.266699]  ? do_syscall_64+0x67/0x90
+[  433.266898]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.267189]  ? debug_smp_processor_id+0x1b/0x30
+[  433.267477]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.267763]  ? rcu_is_watching+0x3e/0x70
+[  433.267975]  ? syscall_exit_to_user_mode+0x24/0x50
+[  433.268267]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.268567]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.268969]  ? lockdep_hardirqs_on_prepare+0x17/0x240
+[  433.269267]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.269603]  ? syscall_exit_to_user_mode+0x37/0x50
+[  433.269913]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.270195]  ? do_syscall_64+0x67/0x90
+[  433.270409]  ? handle_mm_fault+0x2e7/0x510
+[  433.270660]  ? irqentry_exit_to_user_mode+0x12/0x30
+[  433.270950]  ? irqentry_exit+0x6f/0xa0
+[  433.271152]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.271414]  ? debug_smp_processor_id+0x1b/0x30
+[  433.271700]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.271988]  ? rcu_is_watching+0x3e/0x70
+[  433.272200]  ? irqentry_exit_to_user_mode+0x12/0x30
+[  433.272484]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.272777]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.273069]  ? lockdep_hardirqs_on_prepare+0x17/0x240
+[  433.273364]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.273644]  ? irqentry_exit_to_user_mode+0x25/0x30
+[  433.273928]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.274211]  ? irqentry_exit+0x6f/0xa0
+[  433.274438]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.274727]  ? exc_page_fault+0x92/0x110
+[  433.274953]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+[  433.275265] RIP: 0033:0x7e425d52752d
+[  433.275508] Code: ff c3 66 2e 0f 1f 84 00 00 00 00 00 90 f3 0f 1e fa 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 8b 0d bb c8 0d 00 f7 d8 64 89 01 48
+[  433.276552] RSP: 002b:00007fff0650fbe8 EFLAGS: 00000246 ORIG_RAX: 0000000000000139
+[  433.277505] RAX: ffffffffffffffda RBX: 000058df5aefa500 RCX: 00007e425d52752d
+[  433.278089] RDX: 0000000000000000 RSI: 000058df5aef92a0 RDI: 0000000000000003
+[  433.278540] RBP: 00007fff0650fca0 R08: 0000000000000040 R09: 000058df561870b0
+[  433.278964] R10: 00007e425d604b20 R11: 0000000000000246 R12: 000058df5aef92a0
+[  433.279452] R13: 0000000000000000 R14: 000058df5aefa4b0 R15: 000058df5aef92a0
+[  433.279932]  </TASK>
+[  433.280202] kq_debugcheck: triggered bug=atomic_sleep

@@ -1,0 +1,164 @@
+[  432.461359] kq-debugcheck-lock_order-1792908404556250176
+
+[  432.638373] ======================================================
+[  432.638757] WARNING: possible circular locking dependency detected
+[  432.639163] 6.6.87.1-microsoft-standard-WSL2-kqdebug #1 Tainted: G        W  O      
+[  432.639667] ------------------------------------------------------
+[  432.640037] insmod/2480 is trying to acquire lock:
+[  432.640327] ffffffffc0341168 (kqd_a){+.+.}-{3:3}, at: kqd_lock_order+0x59/0x80 [kq_debugcheck]
+[  432.640860] 
+               but task is already holding lock:
+[  432.641218] ffffffffc03410a8 (kqd_b){+.+.}-{3:3}, at: kqd_lock_order+0x4b/0x80 [kq_debugcheck]
+[  432.641771] 
+               which lock already depends on the new lock.
+
+[  432.642197] 
+               the existing dependency chain (in reverse order) is:
+[  432.642623] 
+               -> #1 (kqd_b){+.+.}-{3:3}:
+[  432.642911]        __mutex_lock+0x127/0x1230
+[  432.643335]        mutex_lock_nested+0x1f/0x30
+[  432.643641]        kqd_lock_order+0x25/0x80 [kq_debugcheck]
+[  432.643954]        kqd_init+0x84/0xff0 [kq_debugcheck]
+[  432.644255]        do_one_initcall+0xd0/0x410
+[  432.644550]        do_init_module+0x149/0x3f0
+[  432.644835]        load_module+0x3194/0x3500
+[  432.645110]        init_module_from_file+0xea/0x140
+[  432.645396]        idempotent_init_module+0x2c3/0x420
+[  432.645709]        __x64_sys_finit_module+0x82/0xe0
+[  432.646037]        x64_sys_call+0xc26/0x2020
+[  432.646348]        do_syscall_64+0x5a/0x90
+[  432.646597]        entry_SYSCALL_64_after_hwframe+0x78/0xe2
+[  432.646883] 
+               -> #0 (kqd_a){+.+.}-{3:3}:
+[  432.647171]        __lock_acquire+0x1fbe/0x34a0
+[  432.647467]        lock_acquire+0x190/0x430
+[  432.647708]        __mutex_lock+0x127/0x1230
+[  432.648029]        mutex_lock_nested+0x1f/0x30
+[  432.648322]        kqd_lock_order+0x59/0x80 [kq_debugcheck]
+[  432.648615]        kqd_init+0x84/0xff0 [kq_debugcheck]
+[  432.648912]        do_one_initcall+0xd0/0x410
+[  432.649228]        do_init_module+0x149/0x3f0
+[  432.649528]        load_module+0x3194/0x3500
+[  432.649856]        init_module_from_file+0xea/0x140
+[  432.650162]        idempotent_init_module+0x2c3/0x420
+[  432.650456]        __x64_sys_finit_module+0x82/0xe0
+[  432.650759]        x64_sys_call+0xc26/0x2020
+[  432.651042]        do_syscall_64+0x5a/0x90
+[  432.651251]        entry_SYSCALL_64_after_hwframe+0x78/0xe2
+[  432.651620] 
+               other info that might help us debug this:
+
+[  432.652389]  Possible unsafe locking scenario:
+
+[  432.652917]        CPU0                    CPU1
+[  432.653204]        ----                    ----
+[  432.653512]   lock(kqd_b);
+[  432.653658]                                lock(kqd_a);
+[  432.653953]                                lock(kqd_b);
+[  432.654248]   lock(kqd_a);
+[  432.654424] 
+                *** DEADLOCK ***
+
+[  432.654789] 1 lock held by insmod/2480:
+[  432.655030]  #0: ffffffffc03410a8 (kqd_b){+.+.}-{3:3}, at: kqd_lock_order+0x4b/0x80 [kq_debugcheck]
+[  432.655578] 
+               stack backtrace:
+[  432.655898] CPU: 1 PID: 2480 Comm: insmod Tainted: G        W  O       6.6.87.1-microsoft-standard-WSL2-kqdebug #1
+[  432.656692] Call Trace:
+[  432.656876]  <TASK>
+[  432.657027]  dump_stack_lvl+0x60/0xa0
+[  432.657318]  dump_stack+0x14/0x20
+[  432.657545]  print_circular_bug+0x348/0x440
+[  432.657782]  check_noncircular+0x24f/0x290
+[  432.658007]  ? __pfx_check_noncircular+0x10/0x10
+[  432.658317]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  432.658643]  ? lockdep_lock+0xb9/0x170
+[  432.658882]  ? __pfx_lockdep_lock+0x10/0x10
+[  432.659121]  ? add_lock_to_list+0x136/0x190
+[  432.659348]  __lock_acquire+0x1fbe/0x34a0
+[  432.659583]  ? __pfx___lock_acquire+0x10/0x10
+[  432.659933]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  432.660304]  ? __pfx_stack_trace_consume_entry+0x10/0x10
+[  432.660647]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  432.660937]  ? arch_stack_walk+0xa2/0x100
+[  432.661166]  lock_acquire+0x190/0x430
+[  432.661408]  ? kqd_lock_order+0x59/0x80 [kq_debugcheck]
+[  432.661721]  ? __pfx_lock_acquire+0x10/0x10
+[  432.661941]  ? lock_is_held_type+0xf0/0x150
+[  432.662180]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  432.662495]  ? __might_resched+0x283/0x370
+[  432.662729]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  432.663026]  __mutex_lock+0x127/0x1230
+[  432.663285]  ? kqd_lock_order+0x59/0x80 [kq_debugcheck]
+[  432.663611]  ? init_module_from_file+0xea/0x140
+[  432.663922]  ? kqd_lock_order+0x59/0x80 [kq_debugcheck]
+[  432.664244]  ? x64_sys_call+0xc26/0x2020
+[  432.664511]  ? __pfx___mutex_lock+0x10/0x10
+[  432.664756]  ? __pfx___mutex_unlock_slowpath+0x10/0x10
+[  432.665066]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  432.665371]  ? __this_cpu_preempt_check+0x17/0x20
+[  432.665689]  ? lock_release+0x27c/0x420
+[  432.665921]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  432.666209]  ? __pfx_kqd_init+0x10/0x10 [kq_debugcheck]
+[  432.666525]  mutex_lock_nested+0x1f/0x30
+[  432.666742]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  432.667030]  ? mutex_lock_nested+0x1f/0x30
+[  432.667248]  kqd_lock_order+0x59/0x80 [kq_debugcheck]
+[  432.667555]  kqd_init+0x84/0xff0 [kq_debugcheck]
+[  432.667852]  do_one_initcall+0xd0/0x410
+[  432.668153]  ? __pfx_do_one_initcall+0x10/0x10
+[  432.668470]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  432.668774]  ? kasan_set_track+0x29/0x40
+[  432.669022]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  432.669322]  ? kasan_poison+0x3e/0x60
+[  432.669538]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  432.669854]  ? kasan_unpoison+0x2c/0x60
+[  432.670091]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  432.670389]  ? kasan_poison+0x3e/0x60
+[  432.670636]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  432.670938]  ? __asan_register_globals+0x62/0x80
+[  432.671271]  do_init_module+0x149/0x3f0
+[  432.671517]  load_module+0x3194/0x3500
+[  432.671774]  ? __pfx_load_module+0x10/0x10
+[  432.672026]  ? __pfx_ima_post_read_file+0x10/0x10
+[  432.672359]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  432.672705]  ? security_kernel_post_read_file+0x71/0x80
+[  432.673014]  ? __kasan_check_write+0x18/0x20
+[  432.673317]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  432.673601]  ? kernel_read_file+0x1f2/0x4a0
+[  432.673848]  ? __pfx_kernel_read_file+0x10/0x10
+[  432.674131]  ? find_held_lock+0x8e/0xb0
+[  432.674367]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  432.674706]  ? __this_cpu_preempt_check+0x17/0x20
+[  432.674995]  init_module_from_file+0xea/0x140
+[  432.675303]  ? init_module_from_file+0xea/0x140
+[  432.675607]  ? __pfx_init_module_from_file+0x10/0x10
+[  432.675897]  ? __this_cpu_preempt_check+0x17/0x20
+[  432.676185]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  432.676552]  ? lock_release+0x27c/0x420
+[  432.676846]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  432.677151]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  432.677442]  ? do_raw_spin_unlock+0xb1/0x110
+[  432.677758]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  432.678076]  idempotent_init_module+0x2c3/0x420
+[  432.678386]  ? __pfx_idempotent_init_module+0x10/0x10
+[  432.678701]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  432.679017]  ? __kasan_check_read+0x15/0x20
+[  432.679239]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  432.679522]  ? __fget_light+0xe9/0x110
+[  432.679751]  __x64_sys_finit_module+0x82/0xe0
+[  432.680074]  x64_sys_call+0xc26/0x2020
+[  432.680308]  do_syscall_64+0x5a/0x90
+[  432.680544]  ? exc_page_fault+0x92/0x110
+[  432.680785]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+[  432.681104] RIP: 0033:0x78526d92752d
+[  432.681348] Code: ff c3 66 2e 0f 1f 84 00 00 00 00 00 90 f3 0f 1e fa 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 8b 0d bb c8 0d 00 f7 d8 64 89 01 48
+[  432.682462] RSP: 002b:00007fff66b88688 EFLAGS: 00000246 ORIG_RAX: 0000000000000139
+[  432.682944] RAX: ffffffffffffffda RBX: 000062eb8d557500 RCX: 000078526d92752d
+[  432.683401] RDX: 0000000000000000 RSI: 000062eb8d5562a0 RDI: 0000000000000003
+[  432.683885] RBP: 00007fff66b88740 R08: 0000000000000040 R09: 000062eb812b20b0
+[  432.684334] R10: 000078526da04b20 R11: 0000000000000246 R12: 000062eb8d5562a0
+[  432.684883] R13: 0000000000000000 R14: 000062eb8d5574b0 R15: 000062eb8d5562a0
+[  432.685389]  </TASK>
+[  432.685636] kq_debugcheck: triggered bug=lock_order

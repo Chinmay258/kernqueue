@@ -1,0 +1,13 @@
+[  249.849258] kernqueue-test-cycle-1792908221
+[  250.594549] kernqueue: loading out-of-tree module taints kernel.
+[  250.671577] kernqueue: ready: /dev/kernqueue (240:0), capacity 65536 bytes
+[  290.858365] kernqueue: unloaded
+[  291.502899] kernqueue: ready: /dev/kernqueue (240:0), capacity 65536 bytes
+[  370.190961] kernqueue: unloaded
+[  370.908261] kernqueue: ready: /dev/kernqueue (240:0), capacity 4096 bytes
+[  424.426631] kernqueue: unloaded
+[  425.150245] kernqueue: ready: /dev/kernqueue (240:0), capacity 16777216 bytes
+[  428.099187] kernqueue: unloaded
+[  428.554595] kernqueue: capacity=100 is outside [4096, 16777216]
+[  428.913893] kernqueue: capacity=4095 is outside [4096, 16777216]
+[  429.277189] kernqueue: capacity=16777217 is outside [4096, 16777216]

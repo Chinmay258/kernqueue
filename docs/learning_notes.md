@@ -477,6 +477,59 @@ Measured effect (run 1, v1 wake-all): 16 writers / 1 reader, 4 KiB records,
   (data races) instrument user-space code only. The kernel equivalents are
   KASAN, UBSAN, KCSAN and lockdep, which need a kernel built with them.
 
+### Kernel sanitizers (debug kernel)
+
+User-space sanitizers can't see inside the kernel. The kernel has its own,
+enabled at build time:
+
+* **lockdep** (`PROVE_LOCKING`) records, for every lock *class*, which other
+  classes were held when it was taken. A new edge that closes a cycle (A→B
+  seen earlier, now B→A) is a possible deadlock, reported even if it never
+  actually deadlocked. It also checks *wait types*: taking a sleeping lock
+  (mutex, rwsem) while holding a spinning one is an "Invalid wait context".
+  Lock classes come from the lock's initialisation site, so
+  `mutex_init(&kq.lock)` shows up as `&kq.lock` in `/proc/lockdep`.
+* **Lockdep reports once, then switches itself off** (`debug_locks=0` in
+  `/proc/lockdep_stats`), because after one problem its state can't be
+  trusted. So "no report" only means something if `debug_locks` is still 1,
+  and a self-test of lockdep has to come before anything else that triggers
+  it.
+* **`DEBUG_ATOMIC_SLEEP`**: `might_sleep()`/`might_fault()` check the preempt
+  count and complain if called in atomic context. `copy_to_user()` calls
+  `might_fault()`, so "copy under a spinlock" is caught even when no page
+  fault happens. `might_fault()` also tells lockdep it may take `mmap_lock`,
+  which is how lockdep catches the same bug as an invalid wait context.
+* **KASAN** keeps shadow memory (1 byte per 8) describing which bytes are
+  valid, and the compiler instruments every access to check it. That catches
+  out-of-bounds and use-after-free at the faulting instruction.
+  `KASAN_VMALLOC` extends this to vmalloc memory (kernqueue's 16 MiB ring).
+  A KASAN report marks lockdep unreliable, which also turns lockdep off.
+* Debug options change struct layouts (`struct mutex` gains a `dep_map`), so
+  a module must be built against the debug tree itself.
+
+#### Exercises (sanitizers)
+
+1. Why can't a module built for the stock kernel be loaded into the lockdep
+   kernel, even if the version string matched?
+2. A test run under lockdep shows no reports, but `debug_locks` is 0 at the
+   end. What can you conclude?
+3. Why did the `atomic_sleep` self-test produce two different reports?
+
+<details><summary>Answers</summary>
+
+1. Lockdep adds fields to lock structures (`struct mutex`, `spinlock_t`), so
+   every inline lock operation and struct offset differs. Modversions CRCs
+   would differ too, and the loader would reject it.
+2. Nothing good: lockdep switched itself off at some point (a report from
+   anywhere in the kernel), so locking after that point wasn't checked. The
+   run is not evidence of lock correctness.
+3. `might_fault()` both checks the preempt count (DEBUG_ATOMIC_SLEEP: "sleeping
+   function called from invalid context") and annotates a possible
+   `mmap_lock` acquisition for lockdep. Doing that under a spinlock is a
+   sleeping-lock-inside-spinning-lock violation ("Invalid wait context").
+
+</details>
+
 #### Exercises
 
 1. Why does `test_stress` require every `read()` to return exactly one record,

@@ -1,0 +1,166 @@
+[  433.763204] kq-debugcheck-oob-1792908405937260852
+[  433.859176] ==================================================================
+[  433.859678] BUG: KASAN: slab-out-of-bounds in kqd_oob+0x47/0x60 [kq_debugcheck]
+[  433.860186] Write of size 1 at addr ffff888103a96740 by task insmod/2514
+
+[  433.860709] CPU: 0 PID: 2514 Comm: insmod Tainted: G        W  O       6.6.87.1-microsoft-standard-WSL2-kqdebug #1
+[  433.861279] Call Trace:
+[  433.861438]  <TASK>
+[  433.861584]  dump_stack_lvl+0x60/0xa0
+[  433.861804]  print_report+0xc5/0x5f0
+[  433.862048]  ? kqd_oob+0x47/0x60 [kq_debugcheck]
+[  433.862365]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.862669]  ? kasan_complete_mode_report_info+0x2a/0x1e0
+[  433.863059]  ? kqd_oob+0x47/0x60 [kq_debugcheck]
+[  433.863362]  kasan_report+0xc3/0x100
+[  433.863608]  ? kqd_oob+0x47/0x60 [kq_debugcheck]
+[  433.863933]  ? __pfx_kqd_init+0x10/0x10 [kq_debugcheck]
+[  433.864243]  __asan_store1+0x58/0x60
+[  433.864457]  kqd_oob+0x47/0x60 [kq_debugcheck]
+[  433.864762]  kqd_init+0x5d/0xff0 [kq_debugcheck]
+[  433.865054]  do_one_initcall+0xd0/0x410
+[  433.865284]  ? __pfx_do_one_initcall+0x10/0x10
+[  433.865598]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.865900]  ? kasan_set_track+0x29/0x40
+[  433.866135]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.866453]  ? kasan_poison+0x3e/0x60
+[  433.866690]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.867016]  ? kasan_unpoison+0x2c/0x60
+[  433.867248]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.867539]  ? kasan_poison+0x3e/0x60
+[  433.867762]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.868071]  ? __asan_register_globals+0x62/0x80
+[  433.868413]  do_init_module+0x149/0x3f0
+[  433.868656]  load_module+0x3194/0x3500
+[  433.868903]  ? __pfx_load_module+0x10/0x10
+[  433.869136]  ? __pfx_ima_post_read_file+0x10/0x10
+[  433.869434]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.869719]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.869998]  ? __kasan_check_write+0x18/0x20
+[  433.870275]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.870603]  ? kernel_read_file+0x1f2/0x4a0
+[  433.870854]  ? __pfx_kernel_read_file+0x10/0x10
+[  433.871159]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.871506]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.871797]  ? rcu_is_watching+0x3e/0x70
+[  433.872031]  init_module_from_file+0xea/0x140
+[  433.872321]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.872622]  ? init_module_from_file+0xea/0x140
+[  433.872866]  ? __pfx_init_module_from_file+0x10/0x10
+[  433.873108]  ? rcu_is_watching+0x3e/0x70
+[  433.873308]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.873553]  ? lock_release+0xcf/0x420
+[  433.873785]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.874030]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.874318]  ? do_raw_spin_unlock+0xb1/0x110
+[  433.874653]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.874987]  idempotent_init_module+0x2c3/0x420
+[  433.875281]  ? __pfx_idempotent_init_module+0x10/0x10
+[  433.875574]  ? local_irq_disable_exit_to_user+0x23/0x30
+[  433.875877]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.876179]  ? __kasan_check_read+0x15/0x20
+[  433.876395]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.876712]  ? __fget_light+0xe9/0x110
+[  433.876943]  __x64_sys_finit_module+0x82/0xe0
+[  433.877261]  x64_sys_call+0xc26/0x2020
+[  433.877487]  do_syscall_64+0x5a/0x90
+[  433.877711]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.878017]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.878311]  ? generic_file_llseek_size+0x6d/0x160
+[  433.878639]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.878933]  ? ext4_llseek+0xc8/0x180
+[  433.879149]  ? local_irq_disable_exit_to_user+0x23/0x30
+[  433.879439]  ? syscall_exit_to_user_mode+0x24/0x50
+[  433.879742]  ? do_syscall_64+0x67/0x90
+[  433.879972]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.880268]  ? debug_smp_processor_id+0x1b/0x30
+[  433.880561]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.880855]  ? rcu_is_watching+0x3e/0x70
+[  433.881086]  ? syscall_exit_to_user_mode+0x24/0x50
+[  433.881368]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.881666]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.881957]  ? lockdep_hardirqs_on_prepare+0x17/0x240
+[  433.882248]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.882597]  ? syscall_exit_to_user_mode+0x37/0x50
+[  433.882897]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.883196]  ? do_syscall_64+0x67/0x90
+[  433.883433]  ? debug_smp_processor_id+0x1b/0x30
+[  433.883726]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.884034]  ? rcu_is_watching+0x3e/0x70
+[  433.884267]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.884598]  ? lock_release+0xcf/0x420
+[  433.884918]  ? __up_read+0x1a5/0x510
+[  433.885165]  ? do_user_addr_fault+0x3d0/0x8e0
+[  433.885491]  ? __pfx_lock_release+0x10/0x10
+[  433.885719]  ? __pfx___up_read+0x10/0x10
+[  433.885945]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.886261]  ? rcu_read_unlock+0x25/0x70
+[  433.886508]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.886775]  ? handle_mm_fault+0x2e7/0x510
+[  433.886981]  ? irqentry_exit_to_user_mode+0x12/0x30
+[  433.887265]  ? irqentry_exit+0x6f/0xa0
+[  433.887496]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.887810]  ? debug_smp_processor_id+0x1b/0x30
+[  433.888095]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.888409]  ? rcu_is_watching+0x3e/0x70
+[  433.888675]  ? irqentry_exit_to_user_mode+0x12/0x30
+[  433.889061]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.889418]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.889796]  ? lockdep_hardirqs_on_prepare+0x17/0x240
+[  433.890145]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.890462]  ? irqentry_exit_to_user_mode+0x25/0x30
+[  433.890805]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.891143]  ? irqentry_exit+0x6f/0xa0
+[  433.891393]  ? srso_alias_return_thunk+0x5/0xfbef5
+[  433.891743]  ? exc_page_fault+0x92/0x110
+[  433.892009]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+[  433.892335] RIP: 0033:0x7503ab32752d
+[  433.892594] Code: ff c3 66 2e 0f 1f 84 00 00 00 00 00 90 f3 0f 1e fa 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 8b 0d bb c8 0d 00 f7 d8 64 89 01 48
+[  433.893809] RSP: 002b:00007ffecb8fafe8 EFLAGS: 00000246 ORIG_RAX: 0000000000000139
+[  433.894337] RAX: ffffffffffffffda RBX: 00005af997ea9500 RCX: 00007503ab32752d
+[  433.894828] RDX: 0000000000000000 RSI: 00005af997ea82a0 RDI: 0000000000000003
+[  433.895319] RBP: 00007ffecb8fb0a0 R08: 0000000000000040 R09: 00005af969b7b0b0
+[  433.895864] R10: 00007503ab404b20 R11: 0000000000000246 R12: 00005af997ea82a0
+[  433.896370] R13: 0000000000000000 R14: 00005af997ea94b0 R15: 00005af997ea82a0
+[  433.896891]  </TASK>
+
+[  433.897237] Allocated by task 2514:
+[  433.897478]  kasan_save_stack+0x2a/0x50
+[  433.897735]  kasan_set_track+0x29/0x40
+[  433.897994]  kasan_save_alloc_info+0x22/0x30
+[  433.898312]  __kasan_kmalloc+0x88/0xa0
+[  433.898556]  kmalloc_trace+0x61/0xd0
+[  433.898810]  kqd_oob+0x2e/0x60 [kq_debugcheck]
+[  433.899153]  kqd_init+0x5d/0xff0 [kq_debugcheck]
+[  433.899478]  do_one_initcall+0xd0/0x410
+[  433.899769]  do_init_module+0x149/0x3f0
+[  433.900032]  load_module+0x3194/0x3500
+[  433.900299]  init_module_from_file+0xea/0x140
+[  433.900647]  idempotent_init_module+0x2c3/0x420
+[  433.900998]  __x64_sys_finit_module+0x82/0xe0
+[  433.901347]  x64_sys_call+0xc26/0x2020
+[  433.901638]  do_syscall_64+0x5a/0x90
+[  433.902025]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[  433.902695] The buggy address belongs to the object at ffff888103a96700
+                which belongs to the cache kmalloc-64 of size 64
+[  433.903378] The buggy address is located 0 bytes to the right of
+                allocated 64-byte region [ffff888103a96700, ffff888103a96740)
+
+[  433.904377] The buggy address belongs to the physical page:
+[  433.904761] page:000000004e7a90f4 refcount:1 mapcount:0 mapping:0000000000000000 index:0x0 pfn:0x103a96
+[  433.905354] flags: 0x10000000000800(slab|node=0|zone=1)
+[  433.905707] page_type: 0xffffffff()
+[  433.905981] raw: 0010000000000800 ffff888100042640 dead000000000100 dead000000000122
+[  433.906529] raw: 0000000000000000 0000000080200020 00000001ffffffff 0000000000000000
+[  433.907049] page dumped because: kasan: bad access detected
+
+[  433.907543] Memory state around the buggy address:
+[  433.907863]  ffff888103a96600: fb fb fb fb fb fb fb fb fc fc fc fc fc fc fc fc
+[  433.908327]  ffff888103a96680: 00 00 00 00 00 00 00 00 fc fc fc fc fc fc fc fc
+[  433.908803] >ffff888103a96700: 00 00 00 00 00 00 00 00 fc fc fc fc fc fc fc fc
+[  433.909263]                                            ^
+[  433.909594]  ffff888103a96780: fb fb fb fb fb fb fb fb fc fc fc fc fc fc fc fc
+[  433.910108]  ffff888103a96800: 00 00 00 00 00 00 00 00 fc fc fc fc fc fc fc fc
+[  433.910605] ==================================================================
+[  433.911286] kq_debugcheck: triggered bug=oob

@@ -1,0 +1,2 @@
+# Sanitizer self-test module; only for the debug kernel (scripts/run_debug_checks.sh).
+obj-m := kq_debugcheck.o

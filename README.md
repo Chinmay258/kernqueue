@@ -104,6 +104,7 @@ make sanitize       # both of the above under ASan + UBSan
 make test           # functional tests (module loaded, device otherwise unused)
 make stress         # concurrent integrity suite
 make check-device   # full cycle: load at 3 capacities, test, scan dmesg, unload (sudo)
+scripts/run_debug_checks.sh  # same under a lockdep+KASAN kernel (see docs/testing.md)
 make bench          # benchmark matrix vs a FIFO baseline -> bench/results/<time>/
 ```
 
@@ -132,8 +133,9 @@ Details, debugging tools and what each layer proves: [docs/testing.md](docs/test
   wake-up deliberately prefers writers whose request fits now.
 * The default exclusive wake-ups remove the thundering herd measured in v1,
   but they aren't uniformly faster; see docs/benchmark_results.md.
-* Verified on one kernel (6.6, WSL2, x86-64) only. Kernel sanitizers
-  (lockdep/KASAN/KCSAN) have not been run; see docs/testing.md.
+* Verified on one kernel (6.6, WSL2, x86-64) only, plus a debug build of it
+  with lockdep, DEBUG_ATOMIC_SLEEP and KASAN, under which the full test cycle
+  was clean. KCSAN (data races) has not been run; see docs/testing.md.
 
 ## Documentation
 

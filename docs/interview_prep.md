@@ -133,10 +133,17 @@ the notes. Each answer is backed by a specific line of code or a test.
     data?** Sequence numbers, checksums, regenerated payloads, per-reader
     monotonicity, an atomic seen-bitmap, a final sweep, and cross-checks
     against the driver's counters.
-29. **What would you run next to increase confidence?** A lockdep +
-    `DEBUG_ATOMIC_SLEEP` kernel, KASAN, KCSAN, longer soaks, and other kernel
-    versions/architectures. sparse is already clean, and a planted `__user`
-    misuse was caught.
+29. **Did you run it under kernel sanitizers?** Yes: a debug build of the WSL
+    kernel with lockdep, `DEBUG_ATOMIC_SLEEP`, KASAN (+ vmalloc) and
+    `DEBUG_LIST`, booted via `.wslconfig`. The full cycle was clean, and
+    lockdep stayed on and listed `&kq.lock`. To prove the checkers were live,
+    a throwaway module triggered a lock inversion, a `might_fault()` under a
+    spinlock and a one-byte overrun; all three were reported. Be ready for the
+    gotcha: lockdep disables itself after its first report, and
+    `might_fault()` under a spinlock produces a lockdep report too ("Invalid
+    wait context"), so self-test order matters. Next steps: KCSAN (needs a
+    separate kernel, since it excludes KASAN), longer soaks, other
+    kernels/architectures.
 29b. **How did you test the 32-bit compat path without a 32-bit libc?** With a
     freestanding `-m32 -nostdlib` program that makes raw `int $0x80` syscalls,
     so its `ioctl()` goes through `compat_sys_ioctl()` → `compat_ptr_ioctl()`.
@@ -182,9 +189,12 @@ numbers.
   when the ring holds a single record) via same-session A/B runs.
 * Wrote a C test framework: 27 functional tests with fork-per-test timeouts
   and guard-page fault injection, multi-producer/multi-consumer integrity
-  tests (18.7M records verified across 47 runs), a 32-bit compat-ABI test,
-  sanitizer and sparse runs (ASan/UBSan/TSan, sparse) and fault-injection
-  checks that prove the tests can fail.
+  tests (32M records verified across 79 runs), a 32-bit compat-ABI test,
+  sparse, user-space sanitizers (ASan/UBSan/TSan) and fault-injection checks
+  that prove the tests can fail.
+* Validated the driver under a custom debug kernel (lockdep,
+  DEBUG_ATOMIC_SLEEP, KASAN): clean full test cycle, with a deliberate-bug
+  module confirming each checker was live.
 * Reproduced a matching vendor kernel build tree for WSL2, with config-diff
   checks and symbol-CRC verification against shipped modules, to build and
   load the module safely.

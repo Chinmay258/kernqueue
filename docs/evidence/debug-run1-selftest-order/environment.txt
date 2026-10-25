@@ -1,0 +1,16 @@
+date:        2026-10-25T05:46:46Z
+kernel:      6.6.87.1-microsoft-standard-WSL2-kqdebug (x86_64)
+os:          Ubuntu 24.04.4 LTS
+virtualized: WSL2 (Hyper-V VM)
+cpu:         AMD Ryzen 7 5800H with Radeon Graphics
+cpus:        16 online
+memory:      5.8Gi
+gcc:         gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0
+kernqueue:   not loaded
+CONFIG_KASAN=y
+CONFIG_KASAN_GENERIC=y
+CONFIG_KASAN_OUTLINE=y
+CONFIG_KASAN_VMALLOC=y
+CONFIG_PROVE_LOCKING=y
+CONFIG_DEBUG_ATOMIC_SLEEP=y
+CONFIG_DEBUG_LIST=y

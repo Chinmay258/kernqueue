@@ -65,6 +65,8 @@ See `scripts/prepare_wsl_kdir.sh`.
 | 14 | `sparse` 0.6.4 over the driver (`make sparse`, Kbuild `C=2`) | **clean** (0 warnings) |
 | 15 | sparse mutation check: `copy_to_user()` → `memcpy()` into a `__user` buffer | **detected** ("different address spaces") |
 | 16 | `test_compat32` builds as an i386 binary; without the module it fails at check 1 (no false pass) | **as expected** |
+| 17 | Device cycle under a lockdep + DEBUG_ATOMIC_SLEEP + KASAN kernel (2 boots) | **PASS** both times, no report; lockdep stayed on and tracked kernqueue's locks |
+| 18 | Deliberate-bug self-tests under that kernel: lock order, sleep in atomic, out-of-bounds | **3/3 detected** (debug run 2) |
 
 ### Device run 1: v1 driver (logs: [evidence/run1-v1](evidence/run1-v1/))
 
@@ -144,12 +146,59 @@ The herd fix replicated: 16×1 × 4 KiB took 4.91 s with `exclusive_wake=1`
 and 26.71 s with `exclusive_wake=0` in this session (writer sleeps 165,369 vs
 1,133,832).
 
+### Debug-kernel run 1: lockdep + DEBUG_ATOMIC_SLEEP + KASAN (logs: [evidence/debug-run1-selftest-order](evidence/debug-run1-selftest-order/))
+
+Kernel `6.6.87.1-microsoft-standard-WSL2-kqdebug` (`scripts/prepare_debug_kdir.sh`:
+`PROVE_LOCKING`, `DEBUG_ATOMIC_SLEEP`, `KASAN` generic + `KASAN_VMALLOC`,
+`DEBUG_LIST`), booted through `.wslconfig`. Driver unchanged since run 2.
+
+| Step | Result |
+|---|---|
+| lockdep enabled before the tests (`debug_locks=1`) | yes |
+| full device cycle (functional ×4 configurations, kqctl, compat32, 16 stress runs, parameters, log scan) | **PASS**, no lockdep, KASAN, sleep-in-atomic or list-corruption report |
+| lockdep still enabled after the cycle | **yes** (`debug_locks=1`), so it reported nothing about kernqueue |
+| lockdep tracked kernqueue's locks | **yes**: `&kq.lock` (187 forward dependencies), `&kq.readq`, `&kq.writeq` |
+| self-test `atomic_sleep` | **detected** by DEBUG_ATOMIC_SLEEP, and by lockdep as "Invalid wait context" |
+| self-test `lock_order` | **not reported**: lockdep had already switched itself off after the `atomic_sleep` report |
+| self-test `oob` | **detected**: `BUG: KASAN: slab-out-of-bounds in kqd_oob` |
+
+**Failure analysis.** The `lock_order` miss was a test-ordering bug, not a
+lockdep gap. Lockdep disables itself after its first report, and the
+`atomic_sleep` self-test produces one ("Invalid wait context", because
+`might_fault()` takes `mmap_lock` under the spinlock). **Fix:**
+`run_debug_checks.sh` now runs `lock_order` first and asserts `debug_locks=1`
+just before it. Lockdep's validation was demonstrably live in this run anyway:
+it produced the invalid-wait-context report and tracked kernqueue's locks.
+
+### Debug-kernel run 2: same kernel, corrected self-test order (logs: [evidence/debug-run2](evidence/debug-run2/))
+
+Fresh boot of the same debug kernel.
+
+| Step | Result |
+|---|---|
+| lockdep enabled before the tests | yes (`debug_locks=1`) |
+| full device cycle: functional 4 × 27/27, kqctl 13/13, compat32, 16/16 stress, 3/3 parameters, log scan | **PASS**; no lockdep, KASAN, sleep-in-atomic or list report |
+| lockdep after the cycle | still on (`debug_locks=1`); tracks `&kq.lock` (183 forward deps), `&kq.readq`, `&kq.writeq` |
+| lockdep on immediately before `lock_order` | yes |
+| self-test `lock_order` | **detected**: `WARNING: possible circular locking dependency detected` |
+| self-test `atomic_sleep` | **detected**: `BUG: sleeping function called from invalid context` |
+| self-test `oob` | **detected**: `BUG: KASAN: slab-out-of-bounds in kqd_oob` |
+| overall | **DEBUG KERNEL CHECKS: PASS** |
+
+Afterwards `.wslconfig` was removed, WSL restarted on the stock kernel
+(`uname -r` = `6.6.87.1-microsoft-standard-WSL2`), and `build/kernqueue.ko`
+was rebuilt for it (vermagic and symbol CRCs re-verified).
+
+Under KASAN everything is slower (e.g. 16×1 × 4 KiB: 9.50 s exclusive vs
+39.53 s wake-all, against 4.9 s / 26.7 s on the stock kernel), but the
+relative effect of the wake-up strategy is the same.
+
 ### Totals
 
-Across runs 1–3: **288 functional test executions** (24 × 3 + 27 × 4 + 27 × 4)
-and **41 stress runs**, all passing, plus the 6 A/B stress runs. **18.70 million
-records** were integrity-checked (3.82M + 6.84M + 6.84M + 1.2M A/B), with no
-lost, duplicated, reordered, corrupted or split record.
+Across stock runs 1–3 and debug runs 1–2: **504 functional test executions**
+and **73 stress runs**, all passing, plus the 6 A/B stress runs. **32.38
+million records** were integrity-checked (13.68M of them under lockdep +
+KASAN), with no lost, duplicated, reordered, corrupted or split record.
 
 ### Problems found and fixed
 
@@ -160,12 +209,14 @@ lost, duplicated, reordered, corrupted or split record.
 | Tree reported `6.6.87.1-microsoft-standard-WSL2+` | `setlocalversion` appends `+` when the checkout is not at an annotated tag; vermagic would mismatch | Build with `LOCALVERSION=` (set, empty); the script verifies the release string |
 | Every load logged `BPF: Invalid name_offset` / `Kernel module BTF mismatch detected` (run 1) | Module BTF is split BTF on top of vmlinux BTF; Kbuild used the self-built vmlinux, whose BTF (pahole 1.25) differs from the running kernel's (pahole 1.21). The module works; BPF tools could not read its types | `build_module.sh` regenerates the module's BTF against `/sys/kernel/btf/vmlinux`. The log scan also missed it (it only matched WARNING/BUG/…), so it now also flags `error`, `invalid` and `mismatch`. Fix verification: run 2 |
 | Thundering herd (run 1, table above) | Non-exclusive waits | v2 exclusive, need-aware wake-ups (design.md §4); v1 behaviour kept as `exclusive_wake=0` for comparison |
+| Debug run 1: `lock_order` self-test not reported | Test ordering: lockdep turns itself off after its first report, and the preceding `atomic_sleep` self-test also triggers one ("Invalid wait context") | Run `lock_order` first, and assert `debug_locks=1` just before it. Verified in debug run 2 |
+| During debug run 2's wait, my revert (`wsl --shutdown`) killed a run that had just started | I batched "stop the tab" with the revert; the stop was refused because the user had typed in the tab, but the revert still ran | Restored the debug kernel and reran; reverted only after the run had exited. Process note: never batch a destructive step with the check that guards it |
 
 ## Not done / environment-dependent
 
-* Kernel sanitizers (lockdep, `DEBUG_ATOMIC_SLEEP`, KASAN, KCSAN): not
-  available in the stock WSL kernel. They need a custom debug kernel; see
-  testing.md.
+* KCSAN (data-race detector): not run. It's mutually exclusive with KASAN,
+  so it needs a second debug kernel (`-e KCSAN` instead of KASAN in
+  `prepare_debug_kdir.sh`).
 * The "woken, then interrupted by a signal" hand-off path in v2 is reasoned
   about (design.md) but has no deterministic test.
 * Other kernel versions, architectures and native (non-VM) hardware.

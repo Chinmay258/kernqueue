@@ -1,0 +1,4 @@
+debug_locks=1
+00000000800b8e46 FD:  187 BD:    1 +.+.: &kq.lock
+0000000045e61d90 FD:    1 BD:    1 ....: &kq.readq
+00000000fac05140 FD:    1 BD:    1 ....: &kq.writeq
