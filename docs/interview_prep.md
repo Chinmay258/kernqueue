@@ -182,8 +182,9 @@ numbers.
   when the ring holds a single record) via same-session A/B runs.
 * Wrote a C test framework: 27 functional tests with fork-per-test timeouts
   and guard-page fault injection, multi-producer/multi-consumer integrity
-  tests (11.9M records verified across 31 runs), sanitizer runs
-  (ASan/UBSan/TSan) and fault-injection checks that prove the tests can fail.
+  tests (18.7M records verified across 47 runs), a 32-bit compat-ABI test,
+  sanitizer and sparse runs (ASan/UBSan/TSan, sparse) and fault-injection
+  checks that prove the tests can fail.
 * Reproduced a matching vendor kernel build tree for WSL2, with config-diff
   checks and symbol-CRC verification against shipped modules, to build and
   load the module safely.

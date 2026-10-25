@@ -24,7 +24,7 @@ See `scripts/prepare_wsl_kdir.sh`.
 | Version | Wake-up strategy | Status |
 |---|---|---|
 | v1 | every state change wakes every waiter | verified on device (run 1 below) |
-| v2 (current) | `exclusive_wake` parameter: Y (default) wakes one *suitable* waiter and hands on; N is exactly v1 | verified on device in both modes (run 2 below) |
+| v2 (current) | `exclusive_wake` parameter: Y (default) wakes one *suitable* waiter and hands on; N is exactly v1 | verified on device in both modes (runs 2 and 3 below) |
 
 ## Features
 
@@ -39,10 +39,10 @@ See `scripts/prepare_wsl_kdir.sh`.
 | signals (`-ERESTARTSYS` → EINTR / SA_RESTART) | yes | run 1: `signal_interrupts_read`, `signal_restarts_read` |
 | `poll` readiness and wake-ups | yes | run 1: `poll_states`, `poll_wakeups`; non-blocking stress runs |
 | ioctls GET_STATS / RESET / CLEAR_STATS, ENOTTY, EBADF, EFAULT | yes | run 1: `ioctl_invalid`, `reset_*` |
-| 32-bit compat ioctl (`compat_ptr_ioctl`) | yes | `test_compat32` (freestanding i386) written and built; **device run pending** |
+| 32-bit compat ioctl (`compat_ptr_ioctl`) | yes | run 3: `test_compat32` (freestanding i386 process) PASS: read/write, GET_STATS, ENOTTY, EFAULT via `compat_sys_ioctl()` |
 | non-seekable stream (`ESPIPE`) | yes | run 1: `not_seekable` |
 | exclusive, need-aware wake-ups with hand-off (v2) | yes | run 2: 3 targeted tests (`wake_*`) pass; stress in both modes; 16×1 4.84 s vs 29.04 s |
-| `kqctl` client | yes | `scripts/test_kqctl.sh` (13 checks) written; **device run pending** |
+| `kqctl` client | yes | run 3: `scripts/test_kqctl.sh` **13/13** checks pass |
 | benchmark with latency percentiles | yes | run 2: 81 runs (9 configs × 3 reps × 3 targets), see benchmark_results.md |
 
 ## Checks executed
@@ -126,10 +126,30 @@ Exclusive wake-ups were slower in this configuration: 5.33–5.52 s vs
 benchmark_results.md. This is a documented performance trade-off, not a
 correctness issue.
 
-Totals across both runs: 180 functional test executions (24 × 3 + 27 × 4)
-and 25 stress runs, all passing, plus the 6 A/B stress runs. 11.86 million
-records were integrity-checked (3.82M in run 1, 6.84M in run 2, 1.2M in the
-A/B), with no lost, duplicated, reordered, corrupted or split record.
+### Device run 3: v2 driver plus new tests (logs: [evidence/run3-v2](evidence/run3-v2/))
+
+Same cycle as run 2 (without the benchmark), plus the two tests added after
+it. The driver source is unchanged since run 2.
+
+| Step | Result |
+|---|---|
+| functional, 4 configurations (default, wake-all, 4 KiB, 16 MiB) | **4 × 27/27 PASS** |
+| `scripts/test_kqctl.sh` | **13/13** |
+| `test_compat32` (32-bit process, compat ioctl path) | **PASS** |
+| stress: both wake modes (7 + 7) and minimum capacity (2) | **16/16 PASS** |
+| invalid `capacity` values rejected | **3/3** |
+| kernel log scan | **clean** |
+
+The herd fix replicated: 16×1 × 4 KiB took 4.91 s with `exclusive_wake=1`
+and 26.71 s with `exclusive_wake=0` in this session (writer sleeps 165,369 vs
+1,133,832).
+
+### Totals
+
+Across runs 1–3: **288 functional test executions** (24 × 3 + 27 × 4 + 27 × 4)
+and **41 stress runs**, all passing, plus the 6 A/B stress runs. **18.70 million
+records** were integrity-checked (3.82M + 6.84M + 6.84M + 1.2M A/B), with no
+lost, duplicated, reordered, corrupted or split record.
 
 ### Problems found and fixed
 
@@ -146,8 +166,6 @@ A/B), with no lost, duplicated, reordered, corrupted or split record.
 * Kernel sanitizers (lockdep, `DEBUG_ATOMIC_SLEEP`, KASAN, KCSAN): not
   available in the stock WSL kernel. They need a custom debug kernel; see
   testing.md.
-* `test_compat32` and `test_kqctl.sh` on the device: part of
-  `scripts/run_device_tests.sh`, not yet run (the cycle needs sudo).
 * The "woken, then interrupted by a signal" hand-off path in v2 is reasoned
   about (design.md) but has no deterministic test.
 * Other kernel versions, architectures and native (non-VM) hardware.

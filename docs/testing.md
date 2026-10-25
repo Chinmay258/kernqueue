@@ -14,7 +14,7 @@ marked **(used)**; the rest are recommendations.
 | Sanitizers | `make sanitize` | no | The two layers above under ASan + UBSan. |
 | Functional | `make test` | yes | 27 single-purpose tests of the read/write/poll/ioctl contract, including blocking, signals, partial faults, bad pointers, and three tests that hang if exclusive wake-ups lose a wake-up. Exact expected values. |
 | Stress | `make stress` | yes | MPMC integrity under contention: 7 configurations (1–16 writers × 1–16 readers, 32–4096-byte records, blocking and poll-driven). |
-| Device cycle | `make check-device` (or `scripts/run_device_tests.sh --bench`) | loads it | Functional + stress in both wake-up modes, functional at min/max capacity, parameter rejection, optional benchmark, and a kernel-log scan for warnings, errors, BTF mismatches and lockdep reports. Needs sudo (asks once). |
+| Device cycle | `make check-device` (or `scripts/run_device_tests.sh --bench`) | loads it | Functional + stress in both wake-up modes, the `kqctl` smoke test and the 32-bit compat test, functional at min/max capacity, parameter rejection, optional benchmark, and a kernel-log scan for warnings, errors, BTF mismatches and lockdep reports. Needs sudo (asks once). |
 | Wake-mode A/B | `scripts/ab_wake.sh [cap] [W] [R] [size] [reps]` | loads it | Interleaved same-session comparison of `exclusive_wake=1` vs `0` for one workload (integrity run + benchmark per step). |
 | Benchmark | `make bench` | yes | Throughput and latency percentiles vs a FIFO baseline. Not a correctness test. |
 
