@@ -1,0 +1,9 @@
+date:        2026-10-25T01:19:11Z
+kernel:      6.6.87.1-microsoft-standard-WSL2 (x86_64)
+os:          Ubuntu 24.04.4 LTS
+virtualized: WSL2 (Hyper-V VM)
+cpu:         AMD Ryzen 7 5800H with Radeon Graphics
+cpus:        16 online
+memory:      6.7Gi
+gcc:         gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0
+kernqueue:   not loaded

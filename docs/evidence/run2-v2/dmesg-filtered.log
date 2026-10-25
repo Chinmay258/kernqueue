@@ -1,0 +1,17 @@
+[    7.584503] kernqueue-test-cycle-1792890298
+[    7.669154] kernqueue: ready: /dev/kernqueue (240:0), capacity 65536 bytes
+[   17.645797] kernqueue: unloaded
+[   17.741722] kernqueue: ready: /dev/kernqueue (240:0), capacity 65536 bytes
+[   48.340833] hv_balloon: Max. dynamic memory size: 7094 MB
+[   52.938917] kernqueue: unloaded
+[   53.035815] kernqueue: ready: /dev/kernqueue (240:0), capacity 4096 bytes
+[   65.529356] kernqueue: unloaded
+[   65.636416] kernqueue: ready: /dev/kernqueue (240:0), capacity 16777216 bytes
+[   66.394556] kernqueue: unloaded
+[   66.453565] kernqueue: capacity=100 is outside [4096, 16777216]
+[   66.529450] kernqueue: capacity=4095 is outside [4096, 16777216]
+[   66.600929] kernqueue: capacity=16777217 is outside [4096, 16777216]
+[   66.697135] kernqueue: ready: /dev/kernqueue (240:0), capacity 65536 bytes
+[  401.162902] kernqueue: unloaded
+[  401.274839] kernqueue: ready: /dev/kernqueue (240:0), capacity 65536 bytes
+[  567.796793] kernqueue: unloaded

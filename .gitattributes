@@ -1,0 +1,3 @@
+# The code is built and run on Linux; keep LF endings even if the repository
+# is checked out on Windows (CRLF breaks shell scripts and Kbuild).
+* text=auto eol=lf

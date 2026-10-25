@@ -1,0 +1,5 @@
+# Kbuild description of the module; read by the kernel build system.
+obj-m := kernqueue.o
+
+# The uapi header lives in ../include so user-space programs share it.
+ccflags-y := -I$(src)/../include

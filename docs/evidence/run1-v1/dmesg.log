@@ -1,0 +1,19 @@
+[   13.631935] kernqueue-test-cycle-1792889160
+[   13.729091] kernqueue: loading out-of-tree module taints kernel.
+[   13.730052] BPF: [135659] Invalid name_offset:2575916
+[   13.730454] Kernel module BTF mismatch detected, BTF debug info may be unavailable for some modules
+[   13.730680] kernqueue: ready: /dev/kernqueue (240:0), capacity 65536 bytes
+[   48.399453] hv_balloon: Max. dynamic memory size: 7094 MB
+[   48.885424] kernqueue: unloaded
+[   48.994175] BPF: [135659] Invalid name_offset:2575916
+[   48.994732] kernqueue: ready: /dev/kernqueue (240:0), capacity 4096 bytes
+[   56.970529] kernqueue: unloaded
+[   57.080836] BPF: [135659] Invalid name_offset:2575916
+[   57.087356] kernqueue: ready: /dev/kernqueue (240:0), capacity 16777216 bytes
+[   57.744969] kernqueue: unloaded
+[   57.848679] BPF: [135659] Invalid name_offset:2575916
+[   57.849205] kernqueue: capacity=100 is outside [4096, 16777216]
+[   57.941626] BPF: [135659] Invalid name_offset:2575916
+[   57.942078] kernqueue: capacity=4095 is outside [4096, 16777216]
+[   58.017160] BPF: [135659] Invalid name_offset:2575916
+[   58.017643] kernqueue: capacity=16777217 is outside [4096, 16777216]

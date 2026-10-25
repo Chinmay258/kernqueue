@@ -1,0 +1,27 @@
+# User-space build output
+/build/
+
+# Kernel module build artifacts
+*.o
+*.ko
+*.mod
+*.mod.c
+*.mod.o
+*.cmd
+*.order
+*.symvers
+.tmp_versions/
+.cache.mk
+*.dwo
+*.su
+
+# Editors / tools
+*.swp
+*~
+.vscode/
+.idea/
+compile_commands.json
+core
+core.*
+vgcore.*
+__pycache__/
