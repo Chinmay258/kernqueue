@@ -1,0 +1,33 @@
+[  162.268392] kq-debugcheck-data_race-1792930148481384702
+[  162.319851] ==================================================================
+[  162.320449] BUG: KCSAN: data-race in link_path_walk.part.0.constprop.0 / pid_revalidate
+
+[  162.320955] write to 0xffff9b0cc94e1098 of 2 bytes by task 377 on cpu 12:
+[  162.321277]  pid_revalidate+0x89/0xc0
+[  162.321298]  lookup_fast+0x19c/0x1f0
+[  162.321317]  walk_component+0x46/0x260
+[  162.321337]  link_path_walk.part.0.constprop.0+0x36b/0x5b0
+[  162.321359]  path_lookupat+0x68/0x350
+[  162.321379]  filename_lookup+0x17b/0x310
+[  162.321393]  user_path_at_empty+0x53/0x80
+[  162.321408]  do_readlinkat+0x74/0x190
+[  162.321426]  __x64_sys_readlinkat+0x61/0x80
+[  162.321445]  x64_sys_call+0x2029/0x2730
+[  162.321466]  do_syscall_64+0x5e/0x90
+[  162.321485]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[  162.321706] read to 0xffff9b0cc94e1098 of 2 bytes by task 2247 on cpu 2:
+[  162.322109]  link_path_walk.part.0.constprop.0+0x548/0x5b0
+[  162.322133]  path_lookupat+0x68/0x350
+[  162.322153]  filename_lookup+0x17b/0x310
+[  162.322167]  user_path_at_empty+0x53/0x80
+[  162.322182]  do_readlinkat+0x74/0x190
+[  162.322199]  __x64_sys_readlink+0x55/0x70
+[  162.322218]  x64_sys_call+0x563/0x2730
+[  162.322238]  do_syscall_64+0x5e/0x90
+[  162.322254]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[  162.322403] Reported by Kernel Concurrency Sanitizer on:
+[  162.322623] CPU: 2 PID: 2247 Comm: sudo Tainted: G        W  O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[  162.322643] ==================================================================
+[  164.349649] kq_debugcheck: triggered bug=data_race

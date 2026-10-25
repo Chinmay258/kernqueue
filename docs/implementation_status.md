@@ -67,6 +67,9 @@ See `scripts/prepare_wsl_kdir.sh`.
 | 16 | `test_compat32` builds as an i386 binary; without the module it fails at check 1 (no false pass) | **as expected** |
 | 17 | Device cycle under a lockdep + DEBUG_ATOMIC_SLEEP + KASAN kernel (2 boots) | **PASS** both times, no report; lockdep stayed on and tracked kernqueue's locks |
 | 18 | Deliberate-bug self-tests under that kernel: lock order, sleep in atomic, out-of-bounds | **3/3 detected** (debug run 2) |
+| 19 | Device cycle under a strict-KCSAN kernel (2 boots) | **PASS**; 0 of 351 printed KCSAN reports had a racing access in kernqueue |
+| 20 | KCSAN mutation check: ring.count markings removed | **15 races in kernqueue reported**; stress still passed |
+| 21 | `data_race` self-test (kthreads racing on a module static) under KCSAN | **not reported** in 2 attempts; unexplained, see above |
 
 ### Device run 1: v1 driver (logs: [evidence/run1-v1](evidence/run1-v1/))
 
@@ -193,12 +196,83 @@ Under KASAN everything is slower (e.g. 16×1 × 4 KiB: 9.50 s exclusive vs
 39.53 s wake-all, against 4.9 s / 26.7 s on the stock kernel), but the
 relative effect of the wake-up strategy is the same.
 
+### KCSAN runs: strict KCSAN + DEBUG_ATOMIC_SLEEP (logs: [evidence/kcsan-run1](evidence/kcsan-run1/), [evidence/kcsan-run2](evidence/kcsan-run2/))
+
+Kernel `...-kqkcsan` (`scripts/prepare_debug_kdir.sh kcsan`: `KCSAN`,
+`KCSAN_STRICT` (implies `KCSAN_WEAK_MEMORY`), `DEBUG_ATOMIC_SLEEP`). KCSAN is
+switched on through debugfs before the tests. Driver unchanged since run 2.
+
+| Step | Run 1 | Run 2 (fresh boot) |
+|---|---|---|
+| functional ×4 configs, kqctl, compat32, 16 stress runs, parameters | all pass | all pass |
+| KCSAN activity during the cycle | 3.63M watchpoints, 90,024 races detected kernel-wide, 183 printed | 3.59M watchpoints, 85,156 detected, 168 printed |
+| printed reports with a kernqueue frame anywhere on a stack | 125 | 127 |
+| printed reports where kernqueue performed a racing access | **0** | **0** |
+| device-cycle verdict | FAIL under the first (coarse) rule | **PASS** under the per-access rule |
+| self-test `atomic_sleep` | detected | detected |
+| self-test `data_race` (two kthreads racing on a module static) | **not reported** | **not reported** (threads pinned to 2 CPUs, 2 s; `data_races` +1, unrelated) |
+
+**What the 125–127 "kernqueue" reports actually are.** For every report,
+`scripts/kcsan_attribute.py` takes the first frame of each racing access,
+i.e. the function that made it. All of them are in core-kernel code that
+kernqueue calls or that interrupted it:
+
+* `osq_lock`/`osq_unlock`: the mutex's optimistic-spinning queue, under
+  contention on `kq.lock`
+* `pollwake`/`poll_schedule_timeout` in `fs/select.c`
+* the scheduler's `_find_next_and_bit`, hrtimer, tick and cgroup accounting
+
+The first log-scan rule failed the run if a `[kernqueue]` frame appeared
+anywhere in a report, which blamed kernqueue for races inside `osq_lock()`.
+It now fails only when kernqueue code performs one of the racing accesses. The
+change, and its replay on run 1's log (183 reports, 0 attributed), is
+documented in testing.md.
+
+**The `data_race` self-test does not trigger on this setup.** Its loop is
+instrumented (`__tsan_read4`/`__tsan_write4` on every iteration; checked by
+disassembly). During the 2 s window KCSAN set up 44,230 watchpoints, yet
+`data_races` and `races_unknown_origin` didn't move. When a watchpoint
+expires, KCSAN re-reads the watched value, and that value never changed. So
+the two racers never wrote while the other was stalled on a watchpoint, even
+though both 2 s loops overlapped in wall-clock time (total 2.08 s). The cause
+is not determined. One hypothesis: how Hyper-V schedules vCPUs that spin in
+`udelay()`. This self-test therefore cannot show that KCSAN sees module code,
+so a mutation check on kernqueue itself was run instead (below).
+
+### KCSAN mutation check (logs: [evidence/kcsan-mutant](evidence/kcsan-mutant/))
+
+`scripts/kcsan_mutant_check.sh` builds a copy of the driver with the
+markings removed from every lockless `ring.count` access: `READ_ONCE` →
+plain read in `kq_has_data`, `kq_has_space` and `kq_poll`; `WRITE_ONCE` →
+plain store in `kq_ring.h` (8 changed lines, `mutation.diff`). It then runs
+three stress configurations on it under the KCSAN kernel.
+
+| Result | |
+|---|---|
+| stress runs on the mutant | **3/3 PASS**: the bug is invisible to integrity testing (plain aligned 8-byte accesses happen not to tear on x86) |
+| KCSAN reports | 22, of which **15 have a racing access inside kernqueue** |
+| race pairs | `kq_write`/`kq_read` ×8, `kq_read`/`kq_read` ×4, `kq_poll`/`kq_write`, `kq_poll`/`kq_read`, `kq_write`/`kq_write` |
+| example | `read to 0xffffffffc059b6d0 of 8 bytes ... kq_poll` vs `write ... kq_write`: `kq.ring.count` |
+| verdict | **KCSAN MUTANT CHECK: PASS** |
+
+So KCSAN does see kernqueue's accesses to its static state in the real
+syscall paths, and the real driver's **0 attributed races** is a meaningful
+result. It also shows why the markings matter even though the tests pass
+without them.
+
+After the mutation check, WSL stopped responding on the KCSAN kernel
+(`HCS_E_CONNECTION_TIMEOUT`). Its logs were already on the Windows
+filesystem. WSL was shut down, `.wslconfig` removed, the stock kernel booted,
+and `build/kernqueue.ko` rebuilt for it (vermagic and CRCs re-verified).
+
 ### Totals
 
-Across stock runs 1–3 and debug runs 1–2: **504 functional test executions**
-and **73 stress runs**, all passing, plus the 6 A/B stress runs. **32.38
-million records** were integrity-checked (13.68M of them under lockdep +
-KASAN), with no lost, duplicated, reordered, corrupted or split record.
+Across stock runs 1–3, the two KASAN debug runs and the two KCSAN runs:
+**720 functional test executions** and **105 stress runs**, all passing, plus
+the 6 A/B stress runs. **46.06 million records** were integrity-checked
+(13.68M under lockdep + KASAN, 13.68M under strict KCSAN), with no lost,
+duplicated, reordered, corrupted or split record. The mutation check's 3
+runs on the deliberately broken driver are not counted.
 
 ### Problems found and fixed
 
@@ -211,12 +285,17 @@ KASAN), with no lost, duplicated, reordered, corrupted or split record.
 | Thundering herd (run 1, table above) | Non-exclusive waits | v2 exclusive, need-aware wake-ups (design.md §4); v1 behaviour kept as `exclusive_wake=0` for comparison |
 | Debug run 1: `lock_order` self-test not reported | Test ordering: lockdep turns itself off after its first report, and the preceding `atomic_sleep` self-test also triggers one ("Invalid wait context") | Run `lock_order` first, and assert `debug_locks=1` just before it. Verified in debug run 2 |
 | During debug run 2's wait, my revert (`wsl --shutdown`) killed a run that had just started | I batched "stop the tab" with the revert; the stop was refused because the user had typed in the tab, but the revert still ran | Restored the debug kernel and reran; reverted only after the run had exited. Process note: never batch a destructive step with the check that guards it |
+| First KCSAN kernel never booted (`HCS_E_CONNECTION_TIMEOUT`, twice) | Lockdep + strict KCSAN + boot-time selftest + KCSAN enabled from early boot was too slow for WSL's VM start timeout | KCSAN variant without lockdep and the boot selftest, booting with KCSAN off; enabled through debugfs before the tests (booted in 8 s) |
+| KCSAN run 1 "failed" with 125 reports involving kernqueue | My first attribution rule counted any `[kernqueue]` frame anywhere in a report; all 125 racing accesses were in core code (`osq_lock`, `pollwake`, ...) | `kcsan_attribute.py` attributes by the functions that performed the racing accesses; replayed on run 1 (0 attributed) and used in run 2 |
+| Scan could pass by scanning nothing | If the kernel log ring buffer wrapped past the start marker, `sed` returned nothing | The scan fails when the marker is missing; KCSAN boots get `log_buf_len=16M` |
+| `data_race` self-test not reported | Undetermined (see the KCSAN section) | Replaced as the KCSAN liveness proof by the mutation check, which fired; `data_race` kept as informational |
 
 ## Not done / environment-dependent
 
-* KCSAN (data-race detector): not run. It's mutually exclusive with KASAN,
-  so it needs a second debug kernel (`-e KCSAN` instead of KASAN in
-  `prepare_debug_kdir.sh`).
+* Why the synthetic `data_race` self-test doesn't trigger KCSAN under WSL.
+  The mutation check shows KCSAN works on kernqueue itself.
+* The KCSAN kernel has no lockdep (it couldn't boot with both under WSL), so
+  lockdep coverage comes from the KASAN kernel only.
 * The "woken, then interrupted by a signal" hand-off path in v2 is reasoned
   about (design.md) but has no deterministic test.
 * Other kernel versions, architectures and native (non-VM) hardware.

@@ -101,7 +101,7 @@ device, writes, reads, and issues `GET_STATS`, unknown and bad-pointer ioctls
 through `compat_sys_ioctl()` → `compat_ptr_ioctl()`. It's part of the device
 cycle on x86-64 hosts.
 
-### Kernel sanitizers: lockdep, DEBUG_ATOMIC_SLEEP, KASAN (used); KCSAN (not run)
+### Kernel sanitizers: lockdep, DEBUG_ATOMIC_SLEEP, KASAN, KCSAN (all used)
 None of these are enabled in the stock WSL kernel, so a debug variant was
 built and booted:
 
@@ -111,11 +111,51 @@ built and booted:
 | `CONFIG_DEBUG_ATOMIC_SLEEP` | anything that may sleep (e.g. `copy_to_user`) in atomic context |
 | `CONFIG_KASAN` (generic, outline) + `KASAN_VMALLOC` | out-of-bounds and use-after-free, including on the vmalloc'd 16 MiB ring |
 | `CONFIG_DEBUG_LIST` | corrupted list operations (wait queues are lists) |
-| `CONFIG_KCSAN` | data races. **Not run**: mutually exclusive with KASAN, so it needs a second kernel |
+| `CONFIG_KCSAN` (strict, weak-memory modelling) | data races, including a plain write racing a `READ_ONCE` reader. Needs a second kernel (`prepare_debug_kdir.sh kcsan`) because it excludes KASAN |
+
+**KCSAN kernel and WSL's boot timeout.** The first KCSAN build had lockdep,
+`KCSAN_SELFTEST` and `KCSAN_EARLY_ENABLE` on. WSL gave up waiting for that VM
+to boot, twice (`HCS_E_CONNECTION_TIMEOUT`). The working variant drops lockdep
+(already covered by the KASAN kernel) and the boot selftest, and boots with
+KCSAN off. It booted in 8 s; `run_debug_checks.sh` turns KCSAN on through
+`/sys/kernel/debug/kcsan` right before the tests. The `data_race` self-test
+proves KCSAN is live. A 16 MB log buffer (`kernelCommandLine=log_buf_len=16M`
+in `.wslconfig`) keeps a burst of reports from pushing the test marker out of
+the ring buffer. The scan also now fails outright if the marker is missing,
+instead of scanning nothing and passing.
+
+**KCSAN report attribution.** KCSAN reports races anywhere in the kernel.
+`scripts/kcsan_attribute.py` attributes each report by the functions that
+*performed* the two racing accesses (the first frame of each access's
+stack). The device cycle fails only if one of them is a kernqueue function.
+The first version of the scan failed whenever a `[kernqueue]` frame appeared
+anywhere in a report. In KCSAN run 1 that flagged 125 reports, but every one
+of those racing accesses was in core code that kernqueue calls or that
+interrupted it: `osq_lock` (the mutex's spin queue) reached via
+`kq_read → mutex_lock_interruptible`, `pollwake`/`poll_schedule_timeout`,
+scheduler, timer and tick code. All reports and the per-access attribution
+are kept in the logs (`dmesg-kcsan.log`, `dmesg-kcsan-attribution.txt`).
+
+**KCSAN liveness: the mutation check.** `scripts/kcsan_mutant_check.sh`
+(part of `run_debug_checks.sh` on the KCSAN kernel) builds a copy of
+kernqueue with the `READ_ONCE`/`WRITE_ONCE` on `ring.count` removed and runs
+the stress tests on it. KCSAN must report races inside kernqueue. It reported
+15 (`kq_poll`/`kq_write`, `kq_write`/`kq_read`, ...), while all three stress
+runs still passed their integrity checks. The synthetic `data_race` self-test
+(two kthreads racing on a module static) never triggered under WSL, for
+reasons not determined, so it's informational only.
+
+**Results:** two KCSAN boots, device cycle PASS both times; 351 KCSAN reports
+printed kernel-wide, **0** with a racing access in kernqueue.
+
+**Leftover risk:** after the KCSAN session WSL stopped responding
+(`HCS_E_CONNECTION_TIMEOUT`); `wsl --shutdown` and the stock kernel fixed
+it. Logs live on the Windows filesystem, so nothing was lost.
 
 Steps (they change system configuration):
-1. `scripts/prepare_debug_kdir.sh`: git worktree of the stock tree, the
-   options above, release `...-kqdebug`, builds `bzImage` (~20 min).
+1. `scripts/prepare_debug_kdir.sh kasan` (release `...-kqdebug`) or
+   `... kcsan` (release `...-kqkcsan`): git worktree of the stock tree, the
+   options above, builds `bzImage` (~20 min each).
 2. Copy `arch/x86/boot/bzImage` to Windows and create
    `%UserProfile%\.wslconfig` with `[wsl2]` / `kernel=C:\\path\\to\\bzImage`.
    Then `wsl --shutdown`.

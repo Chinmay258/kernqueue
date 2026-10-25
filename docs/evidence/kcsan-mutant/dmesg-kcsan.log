@@ -1,0 +1,562 @@
+[  379.201267] BUG: KCSAN: data-race in osq_lock / osq_lock
+
+[  379.201622] write to 0xffff944fb7873f14 of 4 bytes by task 1587 on cpu 1:
+[  379.201945]  osq_lock+0x83/0x2d0
+[  379.201965]  __mutex_lock.constprop.0+0x1ca/0xe20
+[  379.201986]  __mutex_lock_interruptible_slowpath+0x24/0x40
+[  379.202006]  mutex_lock_interruptible+0xcc/0xe0
+[  379.202025]  kq_write+0xbf/0x780 [kernqueue]
+[  379.202071]  vfs_write+0x164/0x740
+[  379.202086]  ksys_write+0x110/0x140
+[  379.202101]  __x64_sys_write+0x4f/0x70
+[  379.202116]  x64_sys_call+0x18c1/0x2730
+[  379.202137]  do_syscall_64+0x5e/0x90
+[  379.202154]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[  379.202297] read to 0xffff944fb7873f14 of 4 bytes by task 1582 on cpu 6:
+[  379.202560]  osq_lock+0x14a/0x2d0
+[  379.202578]  __mutex_lock.constprop.0+0x1ca/0xe20
+[  379.202597]  __mutex_lock_interruptible_slowpath+0x24/0x40
+[  379.202618]  mutex_lock_interruptible+0xcc/0xe0
+[  379.202637]  kq_read+0x9e/0x580 [kernqueue]
+[  379.202682]  vfs_read+0x111/0x570
+[  379.202696]  ksys_read+0x110/0x140
+[  379.202711]  __x64_sys_read+0x4f/0x70
+[  379.202726]  x64_sys_call+0x19f9/0x2730
+[  379.202745]  do_syscall_64+0x5e/0x90
+[  379.202761]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[  379.202902] Reported by Kernel Concurrency Sanitizer on:
+[  379.203131] CPU: 6 PID: 1582 Comm: test_stress Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[  379.204599] BUG: KCSAN: data-race in kq_read [kernqueue] / kq_write [kernqueue]
+
+[  379.205229] write to 0xffffffffc059b6d0 of 8 bytes by task 1586 on cpu 8:
+[  379.205753]  kq_write+0x582/0x780 [kernqueue]
+[  379.205818]  vfs_write+0x164/0x740
+[  379.205839]  ksys_write+0x110/0x140
+[  379.205861]  __x64_sys_write+0x4f/0x70
+[  379.205881]  x64_sys_call+0x18c1/0x2730
+[  379.205909]  do_syscall_64+0x5e/0x90
+[  379.205933]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[  379.206128] read to 0xffffffffc059b6d0 of 8 bytes by task 1584 on cpu 13:
+[  379.206425]  kq_read+0x540/0x580 [kernqueue]
+[  379.206489]  vfs_read+0x111/0x570
+[  379.206509]  ksys_read+0x110/0x140
+[  379.206530]  __x64_sys_read+0x4f/0x70
+[  379.206550]  x64_sys_call+0x19f9/0x2730
+[  379.206577]  do_syscall_64+0x5e/0x90
+[  379.206600]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[  379.207306] value changed: 0x0000000000007c00 -> 0x0000000000007bc0
+
+[  379.207834] Reported by Kernel Concurrency Sanitizer on:
+[  379.208123] CPU: 13 PID: 1584 Comm: test_stress Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[  379.216306] BUG: KCSAN: data-race in kq_read [kernqueue] / kq_read [kernqueue]
+
+[  379.216880] write to 0xffffffffc059b6d0 of 8 bytes by task 1583 on cpu 10:
+[  379.217178]  kq_read+0x3ca/0x580 [kernqueue]
+[  379.217242]  vfs_read+0x111/0x570
+[  379.217272]  ksys_read+0x110/0x140
+[  379.217292]  __x64_sys_read+0x4f/0x70
+[  379.217313]  x64_sys_call+0x19f9/0x2730
+[  379.217340]  do_syscall_64+0x5e/0x90
+[  379.217366]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[  379.217522] read to 0xffffffffc059b6d0 of 8 bytes by task 1584 on cpu 13:
+[  379.217851]  kq_read+0x540/0x580 [kernqueue]
+[  379.217916]  vfs_read+0x111/0x570
+[  379.217936]  ksys_read+0x110/0x140
+[  379.217956]  __x64_sys_read+0x4f/0x70
+[  379.217977]  x64_sys_call+0x19f9/0x2730
+[  379.218004]  do_syscall_64+0x5e/0x90
+[  379.218027]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[  379.218187] value changed: 0x0000000000009700 -> 0x0000000000009300
+
+[  379.218616] Reported by Kernel Concurrency Sanitizer on:
+[  379.218846] CPU: 13 PID: 1584 Comm: test_stress Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[  379.225004] BUG: KCSAN: data-race in kq_write [kernqueue] / kq_write [kernqueue]
+
+[  379.225601] write to 0xffffffffc059b6d0 of 8 bytes by task 1586 on cpu 8:
+[  379.225936]  kq_write+0x582/0x780 [kernqueue]
+[  379.225984]  vfs_write+0x164/0x740
+[  379.226000]  ksys_write+0x110/0x140
+[  379.226015]  __x64_sys_write+0x4f/0x70
+[  379.226030]  x64_sys_call+0x18c1/0x2730
+[  379.226051]  do_syscall_64+0x5e/0x90
+[  379.226069]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[  379.226216] read to 0xffffffffc059b6d0 of 8 bytes by task 1588 on cpu 12:
+[  379.226481]  kq_write+0x724/0x780 [kernqueue]
+[  379.226527]  vfs_write+0x164/0x740
+[  379.226542]  ksys_write+0x110/0x140
+[  379.226557]  __x64_sys_write+0x4f/0x70
+[  379.226572]  x64_sys_call+0x18c1/0x2730
+[  379.226592]  do_syscall_64+0x5e/0x90
+[  379.226608]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[  379.226751] value changed: 0x000000000000c500 -> 0x000000000000c6c0
+
+[  379.227123] Reported by Kernel Concurrency Sanitizer on:
+[  379.227344] CPU: 12 PID: 1588 Comm: test_stress Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[  379.239801] BUG: KCSAN: data-race in kq_read [kernqueue] / kq_write [kernqueue]
+
+[  379.240343] read to 0xffffffffc059b6d0 of 8 bytes by task 1589 on cpu 5:
+[  379.240615]  kq_write+0x724/0x780 [kernqueue]
+[  379.240666]  vfs_write+0x164/0x740
+[  379.240682]  ksys_write+0x110/0x140
+[  379.240698]  __x64_sys_write+0x4f/0x70
+[  379.240714]  x64_sys_call+0x18c1/0x2730
+[  379.240734]  do_syscall_64+0x5e/0x90
+[  379.240753]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[  379.240880] write to 0xffffffffc059b6d0 of 8 bytes by task 1583 on cpu 10:
+[  379.241140]  kq_read+0x3ca/0x580 [kernqueue]
+[  379.241187]  vfs_read+0x111/0x570
+[  379.241202]  ksys_read+0x110/0x140
+[  379.241217]  __x64_sys_read+0x4f/0x70
+[  379.241245]  x64_sys_call+0x19f9/0x2730
+[  379.241265]  do_syscall_64+0x5e/0x90
+[  379.241282]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[  379.241428] Reported by Kernel Concurrency Sanitizer on:
+[  379.241626] CPU: 10 PID: 1583 Comm: test_stress Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[  379.291437] BUG: KCSAN: data-race in kq_read [kernqueue] / kq_write [kernqueue]
+
+[  379.291977] write to 0xffffffffc059b6d0 of 8 bytes by task 1588 on cpu 14:
+[  379.292261]  kq_write+0x582/0x780 [kernqueue]
+[  379.292308]  vfs_write+0x164/0x740
+[  379.292325]  ksys_write+0x110/0x140
+[  379.292340]  __x64_sys_write+0x4f/0x70
+[  379.292356]  x64_sys_call+0x18c1/0x2730
+[  379.292378]  do_syscall_64+0x5e/0x90
+[  379.292396]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[  379.292524] read to 0xffffffffc059b6d0 of 8 bytes by task 1582 on cpu 6:
+[  379.292770]  kq_read+0x1db/0x580 [kernqueue]
+[  379.292816]  vfs_read+0x111/0x570
+[  379.292830]  ksys_read+0x110/0x140
+[  379.292845]  __x64_sys_read+0x4f/0x70
+[  379.292861]  x64_sys_call+0x19f9/0x2730
+[  379.292880]  do_syscall_64+0x5e/0x90
+[  379.292897]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[  379.293017] value changed: 0x0000000000000000 -> 0x0000000000000100
+
+[  379.293338] Reported by Kernel Concurrency Sanitizer on:
+[  379.293516] CPU: 6 PID: 1582 Comm: test_stress Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[  379.335043] BUG: KCSAN: data-race in osq_lock / osq_unlock
+
+[  379.335407] write (marked) to 0xffff944fb7ab3f00 of 8 bytes by task 1585 on cpu 2:
+[  379.335787]  osq_lock+0x10c/0x2d0
+[  379.335807]  __mutex_lock.constprop.0+0x1ca/0xe20
+[  379.335828]  __mutex_lock_interruptible_slowpath+0x24/0x40
+[  379.335849]  mutex_lock_interruptible+0xcc/0xe0
+[  379.335869]  kq_read+0x9e/0x580 [kernqueue]
+[  379.335916]  vfs_read+0x111/0x570
+[  379.335931]  ksys_read+0x110/0x140
+[  379.335946]  __x64_sys_read+0x4f/0x70
+[  379.335962]  x64_sys_call+0x19f9/0x2730
+[  379.335983]  do_syscall_64+0x5e/0x90
+[  379.336000]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[  379.336169] read to 0xffff944fb7ab3f00 of 8 bytes by task 1583 on cpu 10:
+[  379.336578]  osq_unlock+0xde/0x160
+[  379.336603]  __mutex_lock.constprop.0+0xcaf/0xe20
+[  379.336630]  __mutex_lock_interruptible_slowpath+0x24/0x40
+[  379.336657]  mutex_lock_interruptible+0xcc/0xe0
+[  379.336677]  kq_read+0x9e/0x580 [kernqueue]
+[  379.336723]  vfs_read+0x111/0x570
+[  379.336738]  ksys_read+0x110/0x140
+[  379.336753]  __x64_sys_read+0x4f/0x70
+[  379.336769]  x64_sys_call+0x19f9/0x2730
+[  379.336789]  do_syscall_64+0x5e/0x90
+[  379.336806]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[  379.336973] value changed: 0x0000000000000000 -> 0xffff944fb78b3f00
+
+[  379.337384] Reported by Kernel Concurrency Sanitizer on:
+[  379.337628] CPU: 10 PID: 1583 Comm: test_stress Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[  379.430174] BUG: KCSAN: data-race in kq_read [kernqueue] / kq_read [kernqueue]
+
+[  379.430932] read to 0xffffffffc059b6d0 of 8 bytes by task 1582 on cpu 6:
+[  379.431291]  kq_read+0x1db/0x580 [kernqueue]
+[  379.431358]  vfs_read+0x111/0x570
+[  379.431380]  ksys_read+0x110/0x140
+[  379.431401]  __x64_sys_read+0x4f/0x70
+[  379.431423]  x64_sys_call+0x19f9/0x2730
+[  379.431452]  do_syscall_64+0x5e/0x90
+[  379.431478]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[  379.431640] write to 0xffffffffc059b6d0 of 8 bytes by task 1584 on cpu 13:
+[  379.431905]  kq_read+0x3ca/0x580 [kernqueue]
+[  379.431970]  vfs_read+0x111/0x570
+[  379.431990]  ksys_read+0x110/0x140
+[  379.432011]  __x64_sys_read+0x4f/0x70
+[  379.432032]  x64_sys_call+0x19f9/0x2730
+[  379.432059]  do_syscall_64+0x5e/0x90
+[  379.432083]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[  379.432228] Reported by Kernel Concurrency Sanitizer on:
+[  379.432490] CPU: 13 PID: 1584 Comm: test_stress Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[  379.470575] BUG: KCSAN: data-race in kq_read [kernqueue] / kq_write [kernqueue]
+
+[  379.471093] write to 0xffffffffc059b6d0 of 8 bytes by task 1587 on cpu 0:
+[  379.471357]  kq_write+0x582/0x780 [kernqueue]
+[  379.471405]  vfs_write+0x164/0x740
+[  379.471422]  ksys_write+0x110/0x140
+[  379.471437]  __x64_sys_write+0x4f/0x70
+[  379.471453]  x64_sys_call+0x18c1/0x2730
+[  379.471475]  do_syscall_64+0x5e/0x90
+[  379.471493]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[  379.471618] read to 0xffffffffc059b6d0 of 8 bytes by task 1583 on cpu 10:
+[  379.471895]  kq_read+0x18a/0x580 [kernqueue]
+[  379.471941]  vfs_read+0x111/0x570
+[  379.471955]  ksys_read+0x110/0x140
+[  379.471970]  __x64_sys_read+0x4f/0x70
+[  379.471986]  x64_sys_call+0x19f9/0x2730
+[  379.472006]  do_syscall_64+0x5e/0x90
+[  379.472023]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[  379.472206] value changed: 0x0000000000000000 -> 0x0000000000000080
+
+[  379.472660] Reported by Kernel Concurrency Sanitizer on:
+[  379.472873] CPU: 10 PID: 1583 Comm: test_stress Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[  380.704458] BUG: KCSAN: data-race in kq_poll [kernqueue] / kq_write [kernqueue]
+
+[  380.705042] read to 0xffffffffc059b6d0 of 8 bytes by task 1592 on cpu 13:
+[  380.705384]  kq_poll+0xc9/0x130 [kernqueue]
+[  380.705467]  do_sys_poll+0x36c/0x760
+[  380.705496]  __x64_sys_poll+0xea/0x230
+[  380.705524]  x64_sys_call+0x144b/0x2730
+[  380.705554]  do_syscall_64+0x5e/0x90
+[  380.705579]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[  380.705813] write to 0xffffffffc059b6d0 of 8 bytes by task 1597 on cpu 4:
+[  380.706336]  kq_write+0x582/0x780 [kernqueue]
+[  380.706403]  vfs_write+0x164/0x740
+[  380.706426]  ksys_write+0x110/0x140
+[  380.706448]  __x64_sys_write+0x4f/0x70
+[  380.706469]  x64_sys_call+0x18c1/0x2730
+[  380.706498]  do_syscall_64+0x5e/0x90
+[  380.706522]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[  380.706705] Reported by Kernel Concurrency Sanitizer on:
+[  380.706980] CPU: 4 PID: 1597 Comm: test_stress Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[  380.880458] BUG: KCSAN: data-race in poll_schedule_timeout.constprop.0 / pollwake
+
+[  380.881150] read-write (marked) to 0xffffbb7540c6fc20 of 4 bytes by task 1597 on cpu 4:
+[  380.881573]  poll_schedule_timeout.constprop.0+0x103/0x130
+[  380.881596]  do_sys_poll+0x513/0x760
+[  380.881616]  __x64_sys_poll+0xea/0x230
+[  380.881636]  x64_sys_call+0x144b/0x2730
+[  380.881658]  do_syscall_64+0x5e/0x90
+[  380.881676]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[  380.881858] write to 0xffffbb7540c6fc20 of 4 bytes by task 1598 on cpu 11:
+[  380.882215]  pollwake+0xd7/0x130
+[  380.882234]  __wake_up_common+0x85/0x180
+[  380.882252]  __wake_up_common_lock+0x7f/0xc0
+[  380.882269]  __wake_up+0x17/0x20
+[  380.882285]  kq_write+0x74b/0x780 [kernqueue]
+[  380.882332]  vfs_write+0x164/0x740
+[  380.882348]  ksys_write+0x110/0x140
+[  380.882363]  __x64_sys_write+0x4f/0x70
+[  380.882379]  x64_sys_call+0x18c1/0x2730
+[  380.882399]  do_syscall_64+0x5e/0x90
+[  380.882416]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[  380.882571] value changed: 0x00000001 -> 0x00000000
+
+[  380.883097] Reported by Kernel Concurrency Sanitizer on:
+[  380.883433] CPU: 11 PID: 1598 Comm: test_stress Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[  380.978532] BUG: KCSAN: data-race in kq_poll [kernqueue] / kq_read [kernqueue]
+
+[  380.979080] read to 0xffffffffc059b6d0 of 8 bytes by task 1593 on cpu 14:
+[  380.979413]  kq_poll+0xc9/0x130 [kernqueue]
+[  380.979465]  do_sys_poll+0x36c/0x760
+[  380.979487]  __x64_sys_poll+0xea/0x230
+[  380.979507]  x64_sys_call+0x144b/0x2730
+[  380.979529]  do_syscall_64+0x5e/0x90
+[  380.979548]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[  380.979768] write to 0xffffffffc059b6d0 of 8 bytes by task 1595 on cpu 0:
+[  380.980115]  kq_read+0x3ca/0x580 [kernqueue]
+[  380.980256]  vfs_read+0x111/0x570
+[  380.980346]  ksys_read+0x110/0x140
+[  380.980371]  __x64_sys_read+0x4f/0x70
+[  380.980393]  x64_sys_call+0x19f9/0x2730
+[  380.980419]  do_syscall_64+0x5e/0x90
+[  380.980437]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[  380.980743] Reported by Kernel Concurrency Sanitizer on:
+[  380.981011] CPU: 0 PID: 1595 Comm: test_stress Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[  381.015188] BUG: KCSAN: data-race in poll_schedule_timeout.constprop.0 / pollwake
+
+[  381.015721] read to 0xffffbb7540c87bf0 of 4 bytes by task 1599 on cpu 7:
+[  381.016034]  poll_schedule_timeout.constprop.0+0x8a/0x130
+[  381.016060]  do_sys_poll+0x513/0x760
+[  381.016079]  __x64_sys_poll+0xea/0x230
+[  381.016100]  x64_sys_call+0x144b/0x2730
+[  381.016121]  do_syscall_64+0x5e/0x90
+[  381.016139]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[  381.016292] write to 0xffffbb7540c87bf0 of 4 bytes by task 1592 on cpu 13:
+[  381.016686]  pollwake+0xd7/0x130
+[  381.016711]  __wake_up_common+0x85/0x180
+[  381.016728]  __wake_up_common_lock+0x7f/0xc0
+[  381.016746]  __wake_up+0x17/0x20
+[  381.016762]  kq_read+0x44c/0x580 [kernqueue]
+[  381.016809]  vfs_read+0x111/0x570
+[  381.016824]  ksys_read+0x110/0x140
+[  381.016839]  __x64_sys_read+0x4f/0x70
+[  381.016854]  x64_sys_call+0x19f9/0x2730
+[  381.016875]  do_syscall_64+0x5e/0x90
+[  381.016893]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[  381.017052] Reported by Kernel Concurrency Sanitizer on:
+[  381.017300] CPU: 13 PID: 1592 Comm: test_stress Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[  381.306248] BUG: KCSAN: data-race in _find_next_and_bit+0x53/0x120
+
+[  381.306652] race at unknown origin, with read to 0xffff944f00071660 of 8 bytes by interrupt on cpu 5:
+[  381.307144]  _find_next_and_bit+0x53/0x120
+[  381.307166]  trigger_load_balance+0x10f/0x380
+[  381.307187]  scheduler_tick+0x123/0x2c0
+[  381.307206]  update_process_times+0xc7/0xf0
+[  381.307226]  tick_sched_handle+0x4d/0xc0
+[  381.307247]  tick_sched_timer+0xac/0xd0
+[  381.307266]  __hrtimer_run_queues+0x26e/0x4c0
+[  381.307285]  hrtimer_interrupt+0x1eb/0x400
+[  381.307307]  hv_stimer0_isr+0x5c/0x70
+[  381.307328]  __sysvec_hyperv_stimer0+0x68/0xb0
+[  381.307350]  sysvec_hyperv_stimer0+0xaf/0xd0
+[  381.307369]  asm_sysvec_hyperv_stimer0+0x1f/0x30
+[  381.307387]  __tsan_unaligned_volatile_read4+0x72/0x1c0
+[  381.307408]  osq_lock+0x16b/0x2d0
+[  381.307427]  __mutex_lock.constprop.0+0x1ca/0xe20
+[  381.307449]  __mutex_lock_interruptible_slowpath+0x24/0x40
+[  381.307473]  mutex_lock_interruptible+0xcc/0xe0
+[  381.307494]  kq_write+0xbf/0x780 [kernqueue]
+[  381.307544]  vfs_write+0x164/0x740
+[  381.307561]  ksys_write+0x110/0x140
+[  381.307578]  __x64_sys_write+0x4f/0x70
+[  381.307595]  x64_sys_call+0x18c1/0x2730
+[  381.307618]  do_syscall_64+0x5e/0x90
+[  381.307636]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[  381.307780] value changed: 0x000000000000aa5b -> 0x000000000000aa59
+
+[  381.308184] Reported by Kernel Concurrency Sanitizer on:
+[  381.308393] CPU: 5 PID: 1597 Comm: test_stress Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[  382.255169] BUG: KCSAN: data-race in kq_read [kernqueue] / kq_write [kernqueue]
+
+[  382.255799] write to 0xffffffffc059b6d0 of 8 bytes by task 1612 on cpu 14:
+[  382.256105]  kq_read+0x3ca/0x580 [kernqueue]
+[  382.256152]  vfs_read+0x111/0x570
+[  382.256167]  ksys_read+0x110/0x140
+[  382.256182]  __x64_sys_read+0x4f/0x70
+[  382.256198]  x64_sys_call+0x19f9/0x2730
+[  382.256219]  do_syscall_64+0x5e/0x90
+[  382.256238]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[  382.256390] read to 0xffffffffc059b6d0 of 8 bytes by task 1618 on cpu 0:
+[  382.256720]  kq_write+0x724/0x780 [kernqueue]
+[  382.256766]  vfs_write+0x164/0x740
+[  382.256781]  ksys_write+0x110/0x140
+[  382.256796]  __x64_sys_write+0x4f/0x70
+[  382.256812]  x64_sys_call+0x18c1/0x2730
+[  382.256832]  do_syscall_64+0x5e/0x90
+[  382.256849]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[  382.257014] value changed: 0x0000000000000040 -> 0x0000000000000000
+
+[  382.257506] Reported by Kernel Concurrency Sanitizer on:
+[  382.257770] CPU: 0 PID: 1618 Comm: test_stress Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[  382.270903] BUG: KCSAN: data-race in kq_read [kernqueue] / kq_write [kernqueue]
+
+[  382.271592] write to 0xffffffffc059b6d0 of 8 bytes by task 1618 on cpu 0:
+[  382.271911]  kq_write+0x582/0x780 [kernqueue]
+[  382.271958]  vfs_write+0x164/0x740
+[  382.271975]  ksys_write+0x110/0x140
+[  382.271990]  __x64_sys_write+0x4f/0x70
+[  382.272005]  x64_sys_call+0x18c1/0x2730
+[  382.272031]  do_syscall_64+0x5e/0x90
+[  382.272059]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[  382.272292] read to 0xffffffffc059b6d0 of 8 bytes by task 1602 on cpu 15:
+[  382.272675]  kq_read+0x540/0x580 [kernqueue]
+[  382.272723]  vfs_read+0x111/0x570
+[  382.272738]  ksys_read+0x110/0x140
+[  382.272753]  __x64_sys_read+0x4f/0x70
+[  382.272769]  x64_sys_call+0x19f9/0x2730
+[  382.272789]  do_syscall_64+0x5e/0x90
+[  382.272807]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[  382.272946] Reported by Kernel Concurrency Sanitizer on:
+[  382.273158] CPU: 15 PID: 1602 Comm: test_stress Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[  382.295792] BUG: KCSAN: data-race in osq_lock / osq_lock
+
+[  382.296157] write to 0xffff944fb7833f14 of 4 bytes by task 1618 on cpu 0:
+[  382.296409]  osq_lock+0x83/0x2d0
+[  382.296428]  __mutex_lock.constprop.0+0x1ca/0xe20
+[  382.296450]  __mutex_lock_interruptible_slowpath+0x24/0x40
+[  382.296471]  mutex_lock_interruptible+0xcc/0xe0
+[  382.296491]  kq_write+0xbf/0x780 [kernqueue]
+[  382.296553]  vfs_write+0x164/0x740
+[  382.296570]  ksys_write+0x110/0x140
+[  382.296585]  __x64_sys_write+0x4f/0x70
+[  382.296601]  x64_sys_call+0x18c1/0x2730
+[  382.296623]  do_syscall_64+0x5e/0x90
+[  382.296641]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[  382.296811] read (reordered) to 0xffff944fb7833f14 of 4 bytes by task 1609 on cpu 2:
+[  382.297228]  osq_lock+0x14a/0x2d0
+[  382.297247]  __mutex_lock.constprop.0+0x1ca/0xe20
+[  382.297266]  __mutex_lock_interruptible_slowpath+0x24/0x40
+[  382.297287]  mutex_lock_interruptible+0xcc/0xe0
+[  382.297307]  kq_read+0x1f6/0x580 [kernqueue]
+[  382.297361]  vfs_read+0x111/0x570
+[  382.297376]  ksys_read+0x110/0x140
+[  382.297391]  __x64_sys_read+0x4f/0x70
+[  382.297407]  x64_sys_call+0x19f9/0x2730
+[  382.297427]  do_syscall_64+0x5e/0x90
+[  382.297444]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+[  382.297466]   |
+                 +-> reordered to: osq_lock+0x139/0x2d0
+
+[  382.297928] Reported by Kernel Concurrency Sanitizer on:
+[  382.298162] CPU: 2 PID: 1609 Comm: test_stress Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[  382.301656] BUG: KCSAN: data-race in kq_read [kernqueue] / kq_write [kernqueue]
+
+[  382.302394] write to 0xffffffffc059b6d0 of 8 bytes by task 1618 on cpu 0:
+[  382.302787]  kq_write+0x582/0x780 [kernqueue]
+[  382.302841]  vfs_write+0x164/0x740
+[  382.302863]  ksys_write+0x110/0x140
+[  382.302884]  __x64_sys_write+0x4f/0x70
+[  382.302915]  x64_sys_call+0x18c1/0x2730
+[  382.302945]  do_syscall_64+0x5e/0x90
+[  382.302970]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[  382.303158] read to 0xffffffffc059b6d0 of 8 bytes by task 1614 on cpu 2:
+[  382.303583]  kq_read+0x1db/0x580 [kernqueue]
+[  382.303640]  vfs_read+0x111/0x570
+[  382.303655]  ksys_read+0x110/0x140
+[  382.303670]  __x64_sys_read+0x4f/0x70
+[  382.303691]  x64_sys_call+0x19f9/0x2730
+[  382.303720]  do_syscall_64+0x5e/0x90
+[  382.303746]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[  382.303947] value changed: 0x0000000000000000 -> 0x0000000000000020
+
+[  382.304383] Reported by Kernel Concurrency Sanitizer on:
+[  382.304590] CPU: 2 PID: 1614 Comm: test_stress Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[  382.392443] BUG: KCSAN: data-race in kq_read [kernqueue] / kq_read [kernqueue]
+
+[  382.393090] write to 0xffffffffc059b6d0 of 8 bytes by task 1603 on cpu 2:
+[  382.393368]  kq_read+0x3ca/0x580 [kernqueue]
+[  382.393415]  vfs_read+0x111/0x570
+[  382.393432]  ksys_read+0x110/0x140
+[  382.393447]  __x64_sys_read+0x4f/0x70
+[  382.393462]  x64_sys_call+0x19f9/0x2730
+[  382.393483]  do_syscall_64+0x5e/0x90
+[  382.393502]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[  382.393656] read to 0xffffffffc059b6d0 of 8 bytes by task 1613 on cpu 7:
+[  382.393963]  kq_read+0x540/0x580 [kernqueue]
+[  382.394010]  vfs_read+0x111/0x570
+[  382.394024]  ksys_read+0x110/0x140
+[  382.394039]  __x64_sys_read+0x4f/0x70
+[  382.394055]  x64_sys_call+0x19f9/0x2730
+[  382.394076]  do_syscall_64+0x5e/0x90
+[  382.394093]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[  382.394236] value changed: 0x0000000000000020 -> 0x0000000000000000
+
+[  382.394679] Reported by Kernel Concurrency Sanitizer on:
+[  382.394913] CPU: 7 PID: 1613 Comm: test_stress Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[  382.470593] BUG: KCSAN: data-race in kq_read [kernqueue] / kq_read [kernqueue]
+
+[  382.471288] write to 0xffffffffc059b6d0 of 8 bytes by task 1604 on cpu 12:
+[  382.471681]  kq_read+0x3ca/0x580 [kernqueue]
+[  382.471751]  vfs_read+0x111/0x570
+[  382.471769]  ksys_read+0x110/0x140
+[  382.471784]  __x64_sys_read+0x4f/0x70
+[  382.471800]  x64_sys_call+0x19f9/0x2730
+[  382.471821]  do_syscall_64+0x5e/0x90
+[  382.471839]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[  382.472032] read to 0xffffffffc059b6d0 of 8 bytes by task 1611 on cpu 15:
+[  382.472572]  kq_read+0x1db/0x580 [kernqueue]
+[  382.472619]  vfs_read+0x111/0x570
+[  382.472634]  ksys_read+0x110/0x140
+[  382.472649]  __x64_sys_read+0x4f/0x70
+[  382.472664]  x64_sys_call+0x19f9/0x2730
+[  382.472685]  do_syscall_64+0x5e/0x90
+[  382.472708]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[  382.472903] value changed: 0x0000000000000060 -> 0x0000000000000020
+
+[  382.473363] Reported by Kernel Concurrency Sanitizer on:
+[  382.473663] CPU: 15 PID: 1611 Comm: test_stress Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[  382.497136] BUG: KCSAN: data-race in kq_read [kernqueue] / kq_write [kernqueue]
+
+[  382.497915] write to 0xffffffffc059b6d0 of 8 bytes by task 1618 on cpu 0:
+[  382.498326]  kq_write+0x582/0x780 [kernqueue]
+[  382.498396]  vfs_write+0x164/0x740
+[  382.498415]  ksys_write+0x110/0x140
+[  382.498430]  __x64_sys_write+0x4f/0x70
+[  382.498446]  x64_sys_call+0x18c1/0x2730
+[  382.498467]  do_syscall_64+0x5e/0x90
+[  382.498485]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[  382.498685] read to 0xffffffffc059b6d0 of 8 bytes by task 1609 on cpu 5:
+[  382.499115]  kq_read+0x18a/0x580 [kernqueue]
+[  382.499163]  vfs_read+0x111/0x570
+[  382.499179]  ksys_read+0x110/0x140
+[  382.499194]  __x64_sys_read+0x4f/0x70
+[  382.499210]  x64_sys_call+0x19f9/0x2730
+[  382.499231]  do_syscall_64+0x5e/0x90
+[  382.499249]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[  382.499425] value changed: 0x0000000000000000 -> 0x0000000000000040
+
+[  382.500005] Reported by Kernel Concurrency Sanitizer on:
+[  382.500306] CPU: 5 PID: 1609 Comm: test_stress Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[  382.766942] BUG: KCSAN: data-race in page_remove_rmap / page_remove_rmap
+
+[  382.767574] read-write (marked) to 0xffffeaf8048e7370 of 4 bytes by task 1566 on cpu 3:
+[  382.768047]  page_remove_rmap+0xa1/0x450
+[  382.768065]  unmap_page_range+0xd47/0x1740
+[  382.768086]  unmap_single_vma+0xd9/0x150
+[  382.768107]  unmap_vmas+0x154/0x2c0
+[  382.768127]  exit_mmap+0x143/0x550
+[  382.768142]  __mmput+0x9f/0x1f0
+[  382.768159]  mmput+0x79/0x90
+[  382.768175]  do_exit+0x59a/0x1440
+[  382.768193]  do_group_exit+0x6d/0x120
+[  382.768212]  __x64_sys_exit_group+0x32/0x40
+[  382.768231]  x64_sys_call+0x1ec9/0x2730
+[  382.768252]  do_syscall_64+0x5e/0x90
+[  382.768271]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[  382.768473] read to 0xffffeaf8048e7370 of 4 bytes by task 1568 on cpu 5:
+[  382.768901]  page_remove_rmap+0x5e/0x450
+[  382.768925]  unmap_page_range+0xd47/0x1740
+[  382.768946]  unmap_single_vma+0xd9/0x150
+[  382.768966]  unmap_vmas+0x154/0x2c0
+[  382.768985]  exit_mmap+0x143/0x550
+[  382.769000]  __mmput+0x9f/0x1f0
+[  382.769016]  mmput+0x79/0x90
+[  382.769031]  do_exit+0x59a/0x1440
+[  382.769049]  do_group_exit+0x6d/0x120
+[  382.769068]  __x64_sys_exit_group+0x32/0x40
+[  382.769087]  x64_sys_call+0x1ec9/0x2730
+[  382.769107]  do_syscall_64+0x5e/0x90
+[  382.769132]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[  382.769346] value changed: 0x00000003 -> 0x00000001
+
+[  382.769818] Reported by Kernel Concurrency Sanitizer on:
+[  382.770124] CPU: 5 PID: 1568 Comm: (udev-worker) Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2

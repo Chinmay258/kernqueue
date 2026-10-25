@@ -133,9 +133,10 @@ Details, debugging tools and what each layer proves: [docs/testing.md](docs/test
   wake-up deliberately prefers writers whose request fits now.
 * The default exclusive wake-ups remove the thundering herd measured in v1,
   but they aren't uniformly faster; see docs/benchmark_results.md.
-* Verified on one kernel (6.6, WSL2, x86-64) only, plus a debug build of it
-  with lockdep, DEBUG_ATOMIC_SLEEP and KASAN, under which the full test cycle
-  was clean. KCSAN (data races) has not been run; see docs/testing.md.
+* Verified on one kernel (6.6, WSL2, x86-64) only, plus two debug builds of
+  it: lockdep + DEBUG_ATOMIC_SLEEP + KASAN, and strict KCSAN. The full test
+  cycle was clean under both; a KCSAN mutation check confirmed KCSAN catches
+  kernqueue's own bug class. See docs/testing.md.
 
 ## Documentation
 

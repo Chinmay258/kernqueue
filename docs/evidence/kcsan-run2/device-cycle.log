@@ -1,0 +1,211 @@
+
+=== default capacity, exclusive wake-ups (default)
+>> insmod <repo>/build/kernqueue.ko 
+crw-rw---- 1 root <group> 240, 0 Oct 25 12:07 /dev/kernqueue
+[   39.406621] kernqueue: ready: /dev/kernqueue (240:0), capacity 65536 bytes
+test_functional: device /dev/kernqueue, exclusive_wake=Y
+PASS     open_modes                              2.9 ms
+PASS     capacity_matches_param                  2.9 ms
+PASS     roundtrip_and_counters                  3.1 ms
+PASS     zero_length                             3.0 ms
+PASS     nonblock_empty_read                     2.9 ms
+PASS     nonblock_toggle                         3.0 ms
+PASS     fill_to_capacity                        3.0 ms
+PASS     atomic_write_semantics                  3.0 ms
+PASS     wraparound_stream                       5.2 ms
+PASS     blocking_read_wakes                     5.1 ms
+PASS     blocking_atomic_write_waits            55.1 ms
+PASS     signal_interrupts_read                  5.4 ms
+PASS     signal_restarts_read                    6.4 ms
+PASS     poll_states                             2.9 ms
+PASS     poll_wakeups                          205.3 ms
+PASS     not_seekable                            2.2 ms
+PASS     bad_user_pointers                       2.8 ms
+PASS     partial_read_fault                      2.8 ms
+PASS     atomic_write_fault                      3.1 ms
+PASS     large_write_partial_fault               3.0 ms
+PASS     ioctl_invalid                           3.0 ms
+PASS     reset_and_clear_stats                   2.9 ms
+PASS     reset_wakes_blocked_writer              5.3 ms
+PASS     wake_skips_unfit_writer                57.4 ms
+PASS     wake_hands_on_to_next_reader            8.1 ms
+PASS     wake_hands_on_to_next_writer            6.2 ms
+PASS     shared_and_persistent                   3.0 ms
+SUMMARY: 27 run, 27 passed, 0 failed
+--> ok (build/logs/20261025-120705/functional-default.log)
+ok    reset and clear-stats succeed
+ok    empty queue reports POLLOUT only
+ok    write TEXT queues the bytes
+ok    stats shows 15 bytes used
+ok    poll reports POLLIN and POLLOUT
+ok    read N returns the text
+ok    non-blocking read on empty queue fails
+ok    write - copies stdin
+ok    dump drains the queue
+ok    queue is empty again
+ok    reset discards queued data
+ok    bad command exits with usage error 2
+ok    invalid read size is rejected
+test_kqctl: PASS
+--> ok (build/logs/20261025-120705/kqctl.log)
+test_compat32: PASS
+--> ok (build/logs/20261025-120705/compat32.log)
++ test_stress -w 1 -r 1 -n 500000 -s 64
+test_stress: PASS 500000 records (30.5 MiB) in 3.05 s, 1x1, 64 B, blocking, waits r/w 5/1360, eagain r/w 0/0
++ test_stress -w 4 -r 4 -n 200000 -s 64
+test_stress: PASS 800000 records (48.8 MiB) in 5.24 s, 4x4, 64 B, blocking, waits r/w 18692/315, eagain r/w 0/0
++ test_stress -w 8 -r 8 -n 50000 -s 512
+test_stress: PASS 400000 records (195.3 MiB) in 2.83 s, 8x8, 512 B, blocking, waits r/w 5711/5358, eagain r/w 0/0
++ test_stress -w 16 -r 1 -n 20000 -s 4096
+test_stress: PASS 320000 records (1250.0 MiB) in 7.31 s, 16x1, 4096 B, blocking, waits r/w 4/180095, eagain r/w 0/0
++ test_stress -w 1 -r 16 -n 200000 -s 32
+test_stress: PASS 200000 records (6.1 MiB) in 3.97 s, 1x16, 32 B, blocking, waits r/w 170897/0, eagain r/w 0/0
++ test_stress -w 4 -r 4 -n 100000 -s 100 --nonblock
+test_stress: PASS 400000 records (38.1 MiB) in 2.53 s, 4x4, 100 B, nonblock, waits r/w 0/0, eagain r/w 13607/100
++ test_stress -w 8 -r 8 -n 50000 -s 4096 --nonblock
+test_stress: PASS 400000 records (1562.5 MiB) in 4.10 s, 8x8, 4096 B, nonblock, waits r/w 0/0, eagain r/w 33180/34906
+(soak run not requested; set KQ_SOAK_SECONDS=N to add one)
+stress suite: all runs passed
+--> ok (build/logs/20261025-120705/stress-default.log)
+[   69.935285] kernqueue: unloaded
+
+=== default capacity, wake-all (exclusive_wake=0)
+>> insmod <repo>/build/kernqueue.ko exclusive_wake=0
+crw-rw---- 1 root <group> 240, 0 Oct 25 12:07 /dev/kernqueue
+[   70.215389] kernqueue: ready: /dev/kernqueue (240:0), capacity 65536 bytes
+test_functional: device /dev/kernqueue, exclusive_wake=N
+PASS     open_modes                              3.0 ms
+PASS     capacity_matches_param                  2.8 ms
+PASS     roundtrip_and_counters                  3.1 ms
+PASS     zero_length                             2.9 ms
+PASS     nonblock_empty_read                     3.0 ms
+PASS     nonblock_toggle                         2.9 ms
+PASS     fill_to_capacity                        3.0 ms
+PASS     atomic_write_semantics                  2.8 ms
+PASS     wraparound_stream                       5.2 ms
+PASS     blocking_read_wakes                     5.3 ms
+PASS     blocking_atomic_write_waits            55.9 ms
+PASS     signal_interrupts_read                  5.2 ms
+PASS     signal_restarts_read                    6.2 ms
+PASS     poll_states                             3.0 ms
+PASS     poll_wakeups                          205.4 ms
+PASS     not_seekable                            2.9 ms
+PASS     bad_user_pointers                       2.8 ms
+PASS     partial_read_fault                      2.9 ms
+PASS     atomic_write_fault                      4.0 ms
+PASS     large_write_partial_fault               2.8 ms
+PASS     ioctl_invalid                           3.0 ms
+PASS     reset_and_clear_stats                   3.1 ms
+PASS     reset_wakes_blocked_writer              5.4 ms
+PASS     wake_skips_unfit_writer                56.8 ms
+PASS     wake_hands_on_to_next_reader            6.4 ms
+PASS     wake_hands_on_to_next_writer            6.2 ms
+PASS     shared_and_persistent                   2.9 ms
+SUMMARY: 27 run, 27 passed, 0 failed
+--> ok (build/logs/20261025-120705/functional-wakeall.log)
++ test_stress -w 1 -r 1 -n 500000 -s 64
+test_stress: PASS 500000 records (30.5 MiB) in 2.95 s, 1x1, 64 B, blocking, waits r/w 7/2230, eagain r/w 0/0
++ test_stress -w 4 -r 4 -n 200000 -s 64
+test_stress: PASS 800000 records (48.8 MiB) in 5.29 s, 4x4, 64 B, blocking, waits r/w 33926/359, eagain r/w 0/0
++ test_stress -w 8 -r 8 -n 50000 -s 512
+test_stress: PASS 400000 records (195.3 MiB) in 2.76 s, 8x8, 512 B, blocking, waits r/w 8895/8840, eagain r/w 0/0
++ test_stress -w 16 -r 1 -n 20000 -s 4096
+test_stress: PASS 320000 records (1250.0 MiB) in 34.01 s, 16x1, 4096 B, blocking, waits r/w 16/1483913, eagain r/w 0/0
++ test_stress -w 1 -r 16 -n 200000 -s 32
+test_stress: PASS 200000 records (6.1 MiB) in 10.44 s, 1x16, 32 B, blocking, waits r/w 723590/0, eagain r/w 0/0
++ test_stress -w 4 -r 4 -n 100000 -s 100 --nonblock
+test_stress: PASS 400000 records (38.1 MiB) in 2.55 s, 4x4, 100 B, nonblock, waits r/w 0/0, eagain r/w 18516/83
++ test_stress -w 8 -r 8 -n 50000 -s 4096 --nonblock
+test_stress: PASS 400000 records (1562.5 MiB) in 4.13 s, 8x8, 4096 B, nonblock, waits r/w 0/0, eagain r/w 37493/39868
+(soak run not requested; set KQ_SOAK_SECONDS=N to add one)
+stress suite: all runs passed
+--> ok (build/logs/20261025-120705/stress-wakeall.log)
+[  133.429635] kernqueue: unloaded
+
+=== minimum capacity (4096)
+>> insmod <repo>/build/kernqueue.ko capacity=4096
+crw-rw---- 1 root <group> 240, 0 Oct 25 12:08 /dev/kernqueue
+[  133.795094] kernqueue: ready: /dev/kernqueue (240:0), capacity 4096 bytes
+test_functional: device /dev/kernqueue, exclusive_wake=Y
+PASS     open_modes                              3.0 ms
+PASS     capacity_matches_param                  2.9 ms
+PASS     roundtrip_and_counters                  2.8 ms
+PASS     zero_length                             3.0 ms
+PASS     nonblock_empty_read                     3.1 ms
+PASS     nonblock_toggle                         3.1 ms
+PASS     fill_to_capacity                        3.0 ms
+PASS     atomic_write_semantics                  3.0 ms
+PASS     wraparound_stream                       3.9 ms
+PASS     blocking_read_wakes                     5.1 ms
+PASS     blocking_atomic_write_waits            56.1 ms
+PASS     signal_interrupts_read                  6.5 ms
+PASS     signal_restarts_read                    6.4 ms
+PASS     poll_states                             3.0 ms
+PASS     poll_wakeups                          205.3 ms
+PASS     not_seekable                            3.2 ms
+PASS     bad_user_pointers                       3.0 ms
+PASS     partial_read_fault                      2.9 ms
+PASS     atomic_write_fault                      2.9 ms
+PASS     large_write_partial_fault               3.0 ms
+PASS     ioctl_invalid                           2.8 ms
+PASS     reset_and_clear_stats                   2.9 ms
+PASS     reset_wakes_blocked_writer              5.3 ms
+PASS     wake_skips_unfit_writer                56.4 ms
+PASS     wake_hands_on_to_next_reader            7.5 ms
+PASS     wake_hands_on_to_next_writer            6.2 ms
+PASS     shared_and_persistent                   2.9 ms
+SUMMARY: 27 run, 27 passed, 0 failed
+--> ok (build/logs/20261025-120705/functional-min.log)
+test_stress: PASS 400000 records (1562.5 MiB) in 20.51 s, 4x4, 4096 B, blocking, waits r/w 320308/325568, eagain r/w 0/0
+--> ok (build/logs/20261025-120705/stress-min.log)
+test_stress: PASS 400000 records (381.5 MiB) in 2.75 s, 4x4, 1000 B, nonblock, waits r/w 0/0, eagain r/w 68344/30577
+--> ok (build/logs/20261025-120705/stress-min-nb.log)
+[  157.979098] kernqueue: unloaded
+
+=== maximum capacity (16 MiB)
+>> insmod <repo>/build/kernqueue.ko capacity=16777216
+crw-rw---- 1 root <group> 240, 0 Oct 25 12:09 /dev/kernqueue
+[  158.355475] kernqueue: ready: /dev/kernqueue (240:0), capacity 16777216 bytes
+test_functional: device /dev/kernqueue, exclusive_wake=Y
+PASS     open_modes                              3.0 ms
+PASS     capacity_matches_param                  2.8 ms
+PASS     roundtrip_and_counters                  3.0 ms
+PASS     zero_length                           104.2 ms
+PASS     nonblock_empty_read                     3.1 ms
+PASS     nonblock_toggle                       101.2 ms
+PASS     fill_to_capacity                      129.7 ms
+PASS     atomic_write_semantics                 31.8 ms
+PASS     wraparound_stream                     421.8 ms
+PASS     blocking_read_wakes                     5.2 ms
+PASS     blocking_atomic_write_waits            83.8 ms
+PASS     signal_interrupts_read                  5.2 ms
+PASS     signal_restarts_read                    6.5 ms
+PASS     poll_states                            31.3 ms
+PASS     poll_wakeups                          236.1 ms
+PASS     not_seekable                            3.1 ms
+PASS     bad_user_pointers                       2.9 ms
+PASS     partial_read_fault                     66.8 ms
+PASS     atomic_write_fault                     69.2 ms
+PASS     large_write_partial_fault               3.3 ms
+PASS     ioctl_invalid                           3.0 ms
+PASS     reset_and_clear_stats                   2.9 ms
+PASS     reset_wakes_blocked_writer             34.7 ms
+PASS     wake_skips_unfit_writer                85.5 ms
+PASS     wake_hands_on_to_next_reader            6.4 ms
+PASS     wake_hands_on_to_next_writer           37.6 ms
+PASS     shared_and_persistent                   2.9 ms
+SUMMARY: 27 run, 27 passed, 0 failed
+--> ok (build/logs/20261025-120705/functional-max.log)
+[  160.308068] kernqueue: unloaded
+
+=== invalid parameters are rejected
+--> ok: capacity=100 rejected
+--> ok: capacity=4095 rejected
+--> ok: capacity=16777217 rejected
+
+=== kernel log
+--> ok: 168 KCSAN report(s), 127 with kernqueue on a stack, none with a racing access in kernqueue
+    (per-access attribution in build/logs/20261025-120705/dmesg-kcsan-attribution.txt)
+--> ok: no unexpected lines (220 kernqueue lines)
+
+DEVICE TEST CYCLE: PASS (logs in build/logs/20261025-120705)

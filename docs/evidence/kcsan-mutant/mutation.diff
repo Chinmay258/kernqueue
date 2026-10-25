@@ -1,0 +1,37 @@
+--- driver/kernqueue.c	2026-10-25 00:55:34.898788500 +0000
++++ <home>/.cache/kernqueue-kcsan-mutant/driver/kernqueue.c	2026-10-25 12:19:44.845735559 +0000
+@@ -92,12 +92,12 @@
+ /* Lockless wake-up conditions. cap never changes after init. */
+ static bool kq_has_data(struct kq_dev *dev)
+ {
+-	return READ_ONCE(dev->ring.count) > 0;
++	return dev->ring.count > 0;
+ }
+ 
+ static bool kq_has_space(struct kq_dev *dev, size_t need)
+ {
+-	return dev->ring.cap - READ_ONCE(dev->ring.count) >= need;
++	return dev->ring.cap - dev->ring.count >= need;
+ }
+ 
+ /*
+@@ -408,7 +408,7 @@
+ 	poll_wait(filp, &dev->readq, wait);
+ 	poll_wait(filp, &dev->writeq, wait);
+ 
+-	used = READ_ONCE(dev->ring.count);
++	used = dev->ring.count;
+ 	if ((filp->f_mode & FMODE_READ) && used > 0)
+ 		mask |= EPOLLIN | EPOLLRDNORM;
+ 	/*
+--- driver/kq_ring.h	2026-10-24 10:05:16.854803400 +0000
++++ <home>/.cache/kernqueue-kcsan-mutant/driver/kq_ring.h	2026-10-25 12:19:44.857735552 +0000
+@@ -35,7 +35,7 @@
+ #ifdef __KERNEL__
+ #include <linux/compiler.h>
+ #include <linux/types.h>
+-#define KQ_WRITE_ONCE(x, val) WRITE_ONCE(x, val)
++#define KQ_WRITE_ONCE(x, val) ((x) = (val))
+ #else
+ #include <stdbool.h>
+ #include <stddef.h>

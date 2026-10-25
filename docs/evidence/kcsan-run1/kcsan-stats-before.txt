@@ -1,0 +1,12 @@
+enabled: 1
+used_watchpoints: 0
+setup_watchpoints: 1724
+data_races: 0
+assert_failures: 0
+no_capacity: 0
+report_races: 0
+races_unknown_origin: 0
+unencodable_accesses: 0
+encoding_false_positives: 0
+
+blacklisted functions: none

@@ -507,6 +507,25 @@ enabled at build time:
 * Debug options change struct layouts (`struct mutex` gains a `dep_map`), so
   a module must be built against the debug tree itself.
 
+* **KCSAN** (Kernel Concurrency Sanitizer) finds data races by sampling.
+  Every few thousand instrumented accesses on a CPU, it sets a *watchpoint*
+  on the address and stalls the accessing thread for a few microseconds. If
+  another CPU touches that address during the stall, that's a race with a
+  known origin. If the value changed but nobody was caught, it's a race of
+  unknown origin. "Marked" accesses (`READ_ONCE`, `WRITE_ONCE`, atomics) are
+  treated as intentional and are never watched. **Strict mode** also reports
+  a plain write racing with a marked read, which the default mode tolerates.
+  That's exactly the mistake that removing `WRITE_ONCE` from `ring.count`
+  would be.
+* **A racing access vs. a stack frame.** KCSAN prints both accesses' stacks.
+  The race "belongs to" the functions at the top of those stacks. Seeing
+  `kq_read` lower down only means kernqueue called `mutex_lock()`, which
+  raced inside `osq_lock()`.
+* **Prove the checker can fire on *your* code.** The kernqueue mutant with
+  markings removed passed every functional and stress test (x86 doesn't tear
+  aligned 8-byte accesses), but KCSAN reported 15 races in it. Tests can't
+  see a C-level data race; the sanitizer can.
+
 #### Exercises (sanitizers)
 
 1. Why can't a module built for the stock kernel be loaded into the lockdep
@@ -514,6 +533,10 @@ enabled at build time:
 2. A test run under lockdep shows no reports, but `debug_locks` is 0 at the
    end. What can you conclude?
 3. Why did the `atomic_sleep` self-test produce two different reports?
+4. A KCSAN report shows `osq_lock` racing with `osq_lock`, and both stacks
+   pass through `kq_read`. Is it a kernqueue bug?
+5. Why did the stress tests pass on the mutant even though it had real data
+   races, and why is it still a bug?
 
 <details><summary>Answers</summary>
 
@@ -527,6 +550,16 @@ enabled at build time:
    function called from invalid context") and annotates a possible
    `mmap_lock` acquisition for lockdep. Doing that under a spinlock is a
    sleeping-lock-inside-spinning-lock violation ("Invalid wait context").
+4. No. The racing accesses are both inside `osq_lock`, the mutex
+   implementation's spin queue. Kernqueue only contends on its mutex. Whether
+   that core race is benign is the locking maintainers' question; strict
+   KCSAN reports it for any heavily contended mutex.
+5. On x86-64, an aligned 8-byte load or store is a single instruction that
+   can't be torn, so the values happened to be right. The C standard still
+   calls it a data race, which is undefined behaviour. The compiler may
+   assume no other thread changes `ring.count` and cache it in a register
+   across a wait loop, or tear or merge accesses on other architectures.
+   `READ_ONCE`/`WRITE_ONCE` rule that out.
 
 </details>
 

@@ -1,0 +1,14 @@
+ok    reset and clear-stats succeed
+ok    empty queue reports POLLOUT only
+ok    write TEXT queues the bytes
+ok    stats shows 15 bytes used
+ok    poll reports POLLIN and POLLOUT
+ok    read N returns the text
+ok    non-blocking read on empty queue fails
+ok    write - copies stdin
+ok    dump drains the queue
+ok    queue is empty again
+ok    reset discards queued data
+ok    bad command exits with usage error 2
+ok    invalid read size is rejected
+test_kqctl: PASS

@@ -1,0 +1,22 @@
+>> repository path contains spaces; staging sources in <home>/.cache/kernqueue-build
+>> building against <home>/kq-kbuild/linux-kcsan with CC=gcc-11 (W=1 extra warnings)
+make: Entering directory '<home>/kq-kbuild/linux-kcsan'
+  CC [M]  <home>/.cache/kernqueue-build/driver/kernqueue.o
+  MODPOST <home>/.cache/kernqueue-build/driver/Module.symvers
+  CC [M]  <home>/.cache/kernqueue-build/driver/kernqueue.mod.o
+  LD [M]  <home>/.cache/kernqueue-build/driver/kernqueue.ko
+  BTF [M] <home>/.cache/kernqueue-build/driver/kernqueue.ko
+make: Leaving directory '<home>/kq-kbuild/linux-kcsan'
+>> regenerating module BTF against /sys/kernel/btf/vmlinux
+>> built <repo>/build/kernqueue.ko
+license:        GPL
+vermagic:       6.6.87.1-microsoft-standard-WSL2-kqkcsan SMP preempt mod_unload modversions 
+parm:           capacity:Ring size in bytes, 4096..16777216 (default 65536) (uint)
+parm:           exclusive_wake:Wake one suitable waiter per event instead of all (default Y) (bool)
+make: Entering directory '<home>/kq-kbuild/linux-kcsan'
+  CC [M]  <home>/.cache/kernqueue-debugcheck/kq_debugcheck.o
+  MODPOST <home>/.cache/kernqueue-debugcheck/Module.symvers
+  CC [M]  <home>/.cache/kernqueue-debugcheck/kq_debugcheck.mod.o
+  LD [M]  <home>/.cache/kernqueue-debugcheck/kq_debugcheck.ko
+  BTF [M] <home>/.cache/kernqueue-debugcheck/kq_debugcheck.ko
+make: Leaving directory '<home>/kq-kbuild/linux-kcsan'

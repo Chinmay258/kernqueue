@@ -1,0 +1,16 @@
++ test_stress -w 1 -r 1 -n 500000 -s 64
+test_stress: PASS 500000 records (30.5 MiB) in 2.95 s, 1x1, 64 B, blocking, waits r/w 7/2230, eagain r/w 0/0
++ test_stress -w 4 -r 4 -n 200000 -s 64
+test_stress: PASS 800000 records (48.8 MiB) in 5.29 s, 4x4, 64 B, blocking, waits r/w 33926/359, eagain r/w 0/0
++ test_stress -w 8 -r 8 -n 50000 -s 512
+test_stress: PASS 400000 records (195.3 MiB) in 2.76 s, 8x8, 512 B, blocking, waits r/w 8895/8840, eagain r/w 0/0
++ test_stress -w 16 -r 1 -n 20000 -s 4096
+test_stress: PASS 320000 records (1250.0 MiB) in 34.01 s, 16x1, 4096 B, blocking, waits r/w 16/1483913, eagain r/w 0/0
++ test_stress -w 1 -r 16 -n 200000 -s 32
+test_stress: PASS 200000 records (6.1 MiB) in 10.44 s, 1x16, 32 B, blocking, waits r/w 723590/0, eagain r/w 0/0
++ test_stress -w 4 -r 4 -n 100000 -s 100 --nonblock
+test_stress: PASS 400000 records (38.1 MiB) in 2.55 s, 4x4, 100 B, nonblock, waits r/w 0/0, eagain r/w 18516/83
++ test_stress -w 8 -r 8 -n 50000 -s 4096 --nonblock
+test_stress: PASS 400000 records (1562.5 MiB) in 4.13 s, 8x8, 4096 B, nonblock, waits r/w 0/0, eagain r/w 37493/39868
+(soak run not requested; set KQ_SOAK_SECONDS=N to add one)
+stress suite: all runs passed

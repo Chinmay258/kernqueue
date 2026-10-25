@@ -141,9 +141,22 @@ the notes. Each answer is backed by a specific line of code or a test.
     spinlock and a one-byte overrun; all three were reported. Be ready for the
     gotcha: lockdep disables itself after its first report, and
     `might_fault()` under a spinlock produces a lockdep report too ("Invalid
-    wait context"), so self-test order matters. Next steps: KCSAN (needs a
-    separate kernel, since it excludes KASAN), longer soaks, other
-    kernels/architectures.
+    wait context"), so self-test order matters.
+29c. **And data races? How do you know KCSAN would even notice one in your
+    code?** A second debug kernel with strict KCSAN: the full cycle had 0
+    reports whose racing access was in kernqueue (out of 351 kernel-wide).
+    Proof it can see kernqueue: a mutant with `READ_ONCE`/`WRITE_ONCE`
+    removed from `ring.count` produced 15 KCSAN reports in
+    `kq_poll`/`kq_read`/`kq_write`, while all stress tests still *passed*.
+    Talking points:
+    - attributing by the racing access, not by "my module is on the stack"
+      (e.g. races inside `osq_lock` reached from `kq_read`)
+    - a synthetic kthread race self-test that never fired under WSL, and why
+      I replaced it as the liveness proof instead of trusting it
+    - the first KCSAN kernel not booting under WSL's VM timeout
+29d. **Next steps for confidence:** longer soaks, other kernels and
+    architectures (especially weakly ordered arm64), and a QEMU setup with a
+    gdbstub.
 29b. **How did you test the 32-bit compat path without a 32-bit libc?** With a
     freestanding `-m32 -nostdlib` program that makes raw `int $0x80` syscalls,
     so its `ioctl()` goes through `compat_sys_ioctl()` → `compat_ptr_ioctl()`.
@@ -189,12 +202,14 @@ numbers.
   when the ring holds a single record) via same-session A/B runs.
 * Wrote a C test framework: 27 functional tests with fork-per-test timeouts
   and guard-page fault injection, multi-producer/multi-consumer integrity
-  tests (32M records verified across 79 runs), a 32-bit compat-ABI test,
+  tests (46M records verified across 111 runs), a 32-bit compat-ABI test,
   sparse, user-space sanitizers (ASan/UBSan/TSan) and fault-injection checks
   that prove the tests can fail.
-* Validated the driver under a custom debug kernel (lockdep,
-  DEBUG_ATOMIC_SLEEP, KASAN): clean full test cycle, with a deliberate-bug
-  module confirming each checker was live.
+* Validated the driver under two custom debug kernels (lockdep +
+  DEBUG_ATOMIC_SLEEP + KASAN, and strict KCSAN): clean full test cycles.
+  Deliberate-bug and mutation checks confirmed each checker could see
+  kernqueue, e.g. KCSAN flagged 15 races in a mutant that passed every
+  functional test.
 * Reproduced a matching vendor kernel build tree for WSL2, with config-diff
   checks and symbol-CRC verification against shipped modules, to build and
   load the module safely.

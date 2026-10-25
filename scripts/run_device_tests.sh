@@ -96,9 +96,42 @@ fi
 
 step "kernel log"
 sudo dmesg | sed -n "/$marker/,\$p" > "$logdir/dmesg.log"
+# If the ring buffer wrapped past the marker, the scan below would see nothing
+# and pass by mistake, so the marker itself must still be there.
+if ! grep -q "$marker" "$logdir/dmesg.log"; then
+	echo "--> FAILED: start marker is gone from the kernel log (ring buffer wrapped); cannot scan"
+	status=1
+fi
 # Lines that are expected on every load: the out-of-tree taint notice.
 grep -v 'loading out-of-tree module taints kernel' "$logdir/dmesg.log" > "$logdir/dmesg-filtered.log"
-if grep -niE 'warning|bug|oops|error|invalid|mismatch|lockdep|circular locking|blocked for more than|call trace' "$logdir/dmesg-filtered.log"; then
+
+# On a KCSAN kernel, data races anywhere in the kernel are reported. Move the
+# KCSAN reports into dmesg-kcsan.log and attribute each one by the functions
+# that performed the two racing accesses (scripts/kcsan_attribute.py). A race
+# is kernqueue's, and fails the run, only if kernqueue code made one of those
+# accesses. A kernqueue frame deeper in a stack just means kernqueue called the
+# code that raced (e.g. kq_read -> mutex_lock -> osq_lock). Without KCSAN this
+# does nothing.
+: > "$logdir/dmesg-kcsan.log"
+awk -v kcsan="$logdir/dmesg-kcsan.log" '
+	/BUG: KCSAN:/ { inblk = 1; blk = $0 "\n"; next }
+	inblk && /\] =+$/ { printf "%s", blk >> kcsan; inblk = 0; next }
+	inblk { blk = blk $0 "\n"; next }
+	{ print }
+' "$logdir/dmesg-filtered.log" > "$logdir/dmesg-scan.log"
+kcsan_total=$(grep -c 'BUG: KCSAN' "$logdir/dmesg-kcsan.log")
+if [ "$kcsan_total" -gt 0 ]; then
+	kcsan_on_stack=$(awk '/BUG: KCSAN/{n++; seen[n]=0} /\[kernqueue\]/{if (!seen[n]) {seen[n]=1; c++}} END{print c+0}' "$logdir/dmesg-kcsan.log")
+	if python3 scripts/kcsan_attribute.py "$logdir/dmesg-kcsan.log" > "$logdir/dmesg-kcsan-attribution.txt"; then
+		echo "--> ok: $kcsan_total KCSAN report(s), $kcsan_on_stack with kernqueue on a stack, none with a racing access in kernqueue"
+		echo "    (per-access attribution in $logdir/dmesg-kcsan-attribution.txt)"
+	else
+		echo "--> FAILED: a KCSAN race has a racing access inside kernqueue (see $logdir/dmesg-kcsan-attribution.txt)"
+		status=1
+	fi
+fi
+
+if grep -niE 'warning|bug|oops|error|invalid|mismatch|lockdep|circular locking|blocked for more than|call trace' "$logdir/dmesg-scan.log"; then
 	echo "--> FAILED: unexpected kernel log lines (see $logdir/dmesg.log)"
 	status=1
 else

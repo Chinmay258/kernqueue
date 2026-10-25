@@ -1,0 +1,3 @@
+test_stress: PASS 200000 records (12.2 MiB) in 1.39 s, 4x4, 64 B, blocking, waits r/w 6481/48, eagain r/w 0/0
+test_stress: PASS 200000 records (19.1 MiB) in 1.29 s, 4x4, 100 B, nonblock, waits r/w 0/0, eagain r/w 5528/60
+test_stress: PASS 50000 records (1.5 MiB) in 1.01 s, 1x16, 32 B, blocking, waits r/w 43286/0, eagain r/w 0/0

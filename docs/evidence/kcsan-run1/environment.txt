@@ -1,0 +1,24 @@
+date:        2026-10-25T11:58:39Z
+kernel:      6.6.87.1-microsoft-standard-WSL2-kqkcsan (x86_64)
+os:          Ubuntu 24.04.4 LTS
+virtualized: WSL2 (Hyper-V VM)
+cpu:         AMD Ryzen 7 5800H with Radeon Graphics
+cpus:        16 online
+memory:      6.6Gi
+gcc:         gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0
+kernqueue:   not loaded
+CONFIG_KCSAN=y
+CONFIG_KCSAN_NUM_WATCHPOINTS=64
+CONFIG_KCSAN_UDELAY_TASK=80
+CONFIG_KCSAN_UDELAY_INTERRUPT=20
+CONFIG_KCSAN_DELAY_RANDOMIZE=y
+CONFIG_KCSAN_SKIP_WATCH=4000
+CONFIG_KCSAN_SKIP_WATCH_RANDOMIZE=y
+CONFIG_KCSAN_INTERRUPT_WATCHER=y
+CONFIG_KCSAN_REPORT_ONCE_IN_MS=3000
+CONFIG_KCSAN_REPORT_RACE_UNKNOWN_ORIGIN=y
+CONFIG_KCSAN_STRICT=y
+CONFIG_KCSAN_WEAK_MEMORY=y
+CONFIG_DEBUG_ATOMIC_SLEEP=y
+CONFIG_DEBUG_LIST=y
+cmdline: initrd=\initrd.img WSL_ROOT_INIT=1 panic=-1 nr_cpus=16 hv_utils.timesync_implicit=1 console=hvc0 debug pty.legacy_count=0 WSL_ENABLE_CRASH_DUMP=1 log_buf_len=16M

@@ -1,0 +1,12 @@
+    7  kq_write[kernqueue] / kq_read[kernqueue]
+    4  kq_read[kernqueue] / kq_read[kernqueue]
+    2  osq_lock[vmlinux] / osq_lock[vmlinux]
+    2  poll_schedule_timeout.constprop.0[vmlinux] / pollwake[vmlinux]
+    1  kq_write[kernqueue] / kq_write[kernqueue]
+    1  osq_lock[vmlinux] / osq_unlock[vmlinux]
+    1  kq_poll[kernqueue] / kq_write[kernqueue]
+    1  kq_poll[kernqueue] / kq_read[kernqueue]
+    1  _find_next_and_bit[vmlinux]
+    1  kq_read[kernqueue] / kq_write[kernqueue]
+    1  page_remove_rmap[vmlinux] / page_remove_rmap[vmlinux]
+reports: 22; racing access inside kernqueue: 15

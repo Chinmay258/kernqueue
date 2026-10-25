@@ -1,0 +1,1432 @@
+[19046.576411] BUG: KCSAN: data-race in _find_next_bit+0x4f/0xd0
+
+[19046.576863] race at unknown origin, with read to 0xffff978c80071338 of 8 bytes by interrupt on cpu 0:
+[19046.577320]  _find_next_bit+0x4f/0xd0
+[19046.577337]  _nohz_idle_balance.isra.0+0x1f9/0x3b0
+[19046.577353]  run_rebalance_domains+0x7c/0x90
+[19046.577368]  handle_softirqs+0xf4/0x2e0
+[19046.577384]  __irq_exit_rcu+0x78/0xd0
+[19046.577398]  irq_exit_rcu+0x12/0x20
+[19046.577412]  sysvec_call_function_single+0xb4/0xd0
+[19046.577429]  asm_sysvec_call_function_single+0x1f/0x30
+[19046.577446]  pv_native_safe_halt+0xf/0x20
+[19046.577462]  arch_cpu_idle+0xd/0x20
+[19046.577480]  default_idle_call+0x34/0xf0
+[19046.577498]  do_idle+0x20f/0x260
+[19046.577516]  cpu_startup_entry+0x31/0x40
+[19046.577534]  rest_init+0x11e/0x120
+[19046.577552]  arch_call_rest_init+0x1b/0x50
+[19046.577568]  start_kernel+0x659/0x990
+[19046.577582]  x86_64_start_reservations+0x25/0x40
+[19046.577601]  __pfx_reserve_bios_regions+0x0/0x10
+[19046.577619]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19046.577780] value changed: 0x000000000000ff7f -> 0x000000000000ffff
+
+[19046.578204] Reported by Kernel Concurrency Sanitizer on:
+[19046.578436] CPU: 0 PID: 0 Comm: swapper/0 Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19057.319477] BUG: KCSAN: data-race in get_cpu_sleep_time_us.part.0 / tick_nohz_idle_stop_tick
+
+[19057.320069] read to 0xffff978d37be4b40 of 1 bytes by task 22138 on cpu 12:
+[19057.320411]  get_cpu_sleep_time_us.part.0+0xb2/0x160
+[19057.320431]  get_cpu_idle_time_us+0x88/0xb0
+[19057.320449]  get_idle_time+0x73/0xa0
+[19057.320470]  uptime_proc_show+0xeb/0x250
+[19057.320489]  seq_read_iter+0x2bf/0x870
+[19057.320506]  proc_reg_read_iter+0x94/0x130
+[19057.320521]  vfs_read+0x349/0x570
+[19057.320536]  ksys_read+0xaa/0x140
+[19057.320551]  __x64_sys_read+0x4f/0x70
+[19057.320566]  x64_sys_call+0x19f9/0x2730
+[19057.320587]  do_syscall_64+0x5e/0x90
+[19057.320606]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[19057.320768] write to 0xffff978d37be4b40 of 1 bytes by task 0 on cpu 15:
+[19057.321069]  tick_nohz_idle_stop_tick+0x166/0x4b0
+[19057.321090]  do_idle+0x20a/0x260
+[19057.321110]  cpu_startup_entry+0x31/0x40
+[19057.321130]  start_secondary+0x119/0x140
+[19057.321148]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19057.321295] Reported by Kernel Concurrency Sanitizer on:
+[19057.321576] CPU: 15 PID: 0 Comm: swapper/15 Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19060.316203] BUG: KCSAN: data-race in _find_next_bit+0x4f/0xd0
+
+[19060.316715] race at unknown origin, with read to 0xffff978c80071338 of 8 bytes by interrupt on cpu 0:
+[19060.317272]  _find_next_bit+0x4f/0xd0
+[19060.317299]  _nohz_idle_balance.isra.0+0x1f9/0x3b0
+[19060.317320]  run_rebalance_domains+0x7c/0x90
+[19060.317336]  handle_softirqs+0xf4/0x2e0
+[19060.317352]  __irq_exit_rcu+0x78/0xd0
+[19060.317367]  irq_exit_rcu+0x12/0x20
+[19060.317382]  sysvec_call_function_single+0xb4/0xd0
+[19060.317401]  asm_sysvec_call_function_single+0x1f/0x30
+[19060.317418]  pv_native_safe_halt+0xf/0x20
+[19060.317435]  arch_cpu_idle+0xd/0x20
+[19060.317454]  default_idle_call+0x34/0xf0
+[19060.317473]  do_idle+0x20f/0x260
+[19060.317492]  cpu_startup_entry+0x31/0x40
+[19060.317512]  rest_init+0x11e/0x120
+[19060.317531]  arch_call_rest_init+0x1b/0x50
+[19060.317549]  start_kernel+0x659/0x990
+[19060.317564]  x86_64_start_reservations+0x25/0x40
+[19060.317584]  __pfx_reserve_bios_regions+0x0/0x10
+[19060.317604]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19060.317777] value changed: 0x000000000000ffb7 -> 0x000000000000fff7
+
+[19060.318268] Reported by Kernel Concurrency Sanitizer on:
+[19060.318526] CPU: 0 PID: 0 Comm: swapper/0 Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19064.664247] BUG: KCSAN: data-race in _find_next_bit+0x4f/0xd0
+
+[19064.664784] race at unknown origin, with read to 0xffff978c80071338 of 8 bytes by interrupt on cpu 1:
+[19064.665298]  _find_next_bit+0x4f/0xd0
+[19064.665319]  _nohz_idle_balance.isra.0+0x1f9/0x3b0
+[19064.665338]  run_rebalance_domains+0x7c/0x90
+[19064.665354]  handle_softirqs+0xf4/0x2e0
+[19064.665370]  __irq_exit_rcu+0x78/0xd0
+[19064.665385]  irq_exit_rcu+0x12/0x20
+[19064.665400]  sysvec_call_function_single+0xb4/0xd0
+[19064.665419]  asm_sysvec_call_function_single+0x1f/0x30
+[19064.665437]  pv_native_safe_halt+0xf/0x20
+[19064.665454]  arch_cpu_idle+0xd/0x20
+[19064.665473]  default_idle_call+0x34/0xf0
+[19064.665493]  do_idle+0x20f/0x260
+[19064.665512]  cpu_startup_entry+0x31/0x40
+[19064.665531]  start_secondary+0x119/0x140
+[19064.665549]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19064.665748] value changed: 0x0000000000007f9f -> 0x000000000000ffdf
+
+[19064.666244] Reported by Kernel Concurrency Sanitizer on:
+[19064.666516] CPU: 1 PID: 0 Comm: swapper/1 Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19065.521832] BUG: KCSAN: data-race in set_nlink / set_nlink
+
+[19065.522557] read to 0xffff978c80711648 of 4 bytes by task 22164 on cpu 6:
+[19065.523071]  set_nlink+0x2f/0x100
+[19065.523106]  kernfs_refresh_inode+0x156/0x170
+[19065.523148]  kernfs_iop_permission+0x7f/0xc0
+[19065.523175]  inode_permission+0x1a6/0x2a0
+[19065.523202]  link_path_walk.part.0.constprop.0+0x3ef/0x5b0
+[19065.523234]  path_lookupat+0x68/0x350
+[19065.523309]  path_openat+0x12c2/0x1970
+[19065.523340]  do_filp_open+0x15a/0x260
+[19065.523359]  do_sys_openat2+0xb7/0xf0
+[19065.523384]  __x64_sys_openat+0xbc/0x120
+[19065.523410]  x64_sys_call+0x1eb9/0x2730
+[19065.523442]  do_syscall_64+0x5e/0x90
+[19065.523466]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[19065.523749] write to 0xffff978c80711648 of 4 bytes by task 22165 on cpu 2:
+[19065.524234]  set_nlink+0x59/0x100
+[19065.524259]  kernfs_refresh_inode+0x156/0x170
+[19065.524279]  kernfs_iop_getattr+0x95/0xd0
+[19065.524298]  vfs_getattr_nosec+0x176/0x1e0
+[19065.524316]  vfs_fstat+0x61/0xa0
+[19065.524334]  __do_sys_newfstat+0x3d/0x90
+[19065.524361]  __x64_sys_newfstat+0x3d/0x60
+[19065.524389]  x64_sys_call+0x1c69/0x2730
+[19065.524420]  do_syscall_64+0x5e/0x90
+[19065.524444]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[19065.524716] Reported by Kernel Concurrency Sanitizer on:
+[19065.525080] CPU: 2 PID: 22165 Comm: (udev-worker) Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19069.331710] BUG: KCSAN: data-race in page_remove_rmap / page_remove_rmap
+
+[19069.332386] read-write (marked) to 0xffffe839c6bf7cb0 of 4 bytes by task 22166 on cpu 7:
+[19069.332951]  page_remove_rmap+0xa1/0x450
+[19069.332978]  unmap_page_range+0xd47/0x1740
+[19069.333008]  unmap_single_vma+0xd9/0x150
+[19069.333035]  unmap_vmas+0x154/0x2c0
+[19069.333062]  exit_mmap+0x143/0x550
+[19069.333082]  __mmput+0x9f/0x1f0
+[19069.333134]  mmput+0x79/0x90
+[19069.333155]  do_exit+0x59a/0x1440
+[19069.333180]  do_group_exit+0x6d/0x120
+[19069.333207]  __x64_sys_exit_group+0x32/0x40
+[19069.333233]  x64_sys_call+0x1ec9/0x2730
+[19069.333262]  do_syscall_64+0x5e/0x90
+[19069.333288]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[19069.333678] read to 0xffffe839c6bf7cb0 of 4 bytes by task 22164 on cpu 11:
+[19069.334219]  page_remove_rmap+0x5e/0x450
+[19069.334247]  unmap_page_range+0xd47/0x1740
+[19069.334276]  unmap_single_vma+0xd9/0x150
+[19069.334304]  unmap_vmas+0x154/0x2c0
+[19069.334332]  exit_mmap+0x143/0x550
+[19069.334353]  __mmput+0x9f/0x1f0
+[19069.334376]  mmput+0x79/0x90
+[19069.334430]  do_exit+0x59a/0x1440
+[19069.334467]  do_group_exit+0x6d/0x120
+[19069.334493]  __x64_sys_exit_group+0x32/0x40
+[19069.334520]  x64_sys_call+0x1ec9/0x2730
+[19069.334549]  do_syscall_64+0x5e/0x90
+[19069.334574]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[19069.334848] Reported by Kernel Concurrency Sanitizer on:
+[19069.335432] CPU: 11 PID: 22164 Comm: (udev-worker) Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19072.504151] BUG: KCSAN: data-race in _find_next_and_bit+0x53/0x120
+
+[19072.504645] race at unknown origin, with read to 0xffff978c80071338 of 8 bytes by interrupt on cpu 12:
+[19072.505029]  _find_next_and_bit+0x53/0x120
+[19072.505055]  trigger_load_balance+0x10f/0x380
+[19072.505080]  scheduler_tick+0x123/0x2c0
+[19072.505104]  update_process_times+0xc7/0xf0
+[19072.505127]  tick_sched_handle+0x4d/0xc0
+[19072.505153]  tick_sched_timer+0xac/0xd0
+[19072.505178]  __hrtimer_run_queues+0x26e/0x4c0
+[19072.505211]  hrtimer_interrupt+0x1eb/0x400
+[19072.505236]  hv_stimer0_isr+0x5c/0x70
+[19072.505262]  __sysvec_hyperv_stimer0+0x68/0xb0
+[19072.505292]  sysvec_hyperv_stimer0+0x5a/0xd0
+[19072.505316]  asm_sysvec_hyperv_stimer0+0x1f/0x30
+
+[19072.505451] value changed: 0x0000000000002b00 -> 0x0000000000000800
+
+[19072.505823] Reported by Kernel Concurrency Sanitizer on:
+[19072.506036] CPU: 12 PID: 22190 Comm: test_stress Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19075.005848] BUG: KCSAN: data-race in tick_nohz_idle_stop_tick / tick_nohz_idle_stop_tick
+
+[19075.006503] write to 0xffffffffb5f50eb0 of 4 bytes by task 0 on cpu 15:
+[19075.006854]  tick_nohz_idle_stop_tick+0x3bd/0x4b0
+[19075.006879]  do_idle+0x20a/0x260
+[19075.006900]  cpu_startup_entry+0x31/0x40
+[19075.006920]  start_secondary+0x119/0x140
+[19075.006940]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19075.007075] read to 0xffffffffb5f50eb0 of 4 bytes by task 0 on cpu 8:
+[19075.007367]  tick_nohz_idle_stop_tick+0x14a/0x4b0
+[19075.007389]  do_idle+0x20a/0x260
+[19075.007409]  cpu_startup_entry+0x31/0x40
+[19075.007430]  start_secondary+0x119/0x140
+[19075.007448]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19075.007579] value changed: 0x0000000f -> 0xffffffff
+
+[19075.007989] Reported by Kernel Concurrency Sanitizer on:
+[19075.008238] CPU: 8 PID: 0 Comm: swapper/8 Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19079.329305] BUG: KCSAN: data-race in page_remove_rmap / page_remove_rmap
+
+[19079.329933] read-write (marked) to 0xffffe839c68a56f0 of 4 bytes by task 22212 on cpu 9:
+[19079.330425]  page_remove_rmap+0xa1/0x450
+[19079.330451]  unmap_page_range+0xd47/0x1740
+[19079.330480]  unmap_single_vma+0xd9/0x150
+[19079.330509]  unmap_vmas+0x154/0x2c0
+[19079.330537]  exit_mmap+0x143/0x550
+[19079.330559]  __mmput+0x9f/0x1f0
+[19079.330582]  mmput+0x79/0x90
+[19079.330604]  do_exit+0x59a/0x1440
+[19079.330630]  do_group_exit+0x6d/0x120
+[19079.330656]  __x64_sys_exit_group+0x32/0x40
+[19079.330683]  x64_sys_call+0x1ec9/0x2730
+[19079.330714]  do_syscall_64+0x5e/0x90
+[19079.330740]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[19079.330980] read to 0xffffe839c68a56f0 of 4 bytes by task 22213 on cpu 1:
+[19079.331459]  page_remove_rmap+0x5e/0x450
+[19079.331483]  unmap_page_range+0xd47/0x1740
+[19079.331504]  unmap_single_vma+0xd9/0x150
+[19079.331525]  unmap_vmas+0x154/0x2c0
+[19079.331544]  exit_mmap+0x143/0x550
+[19079.331559]  __mmput+0x9f/0x1f0
+[19079.331580]  mmput+0x79/0x90
+[19079.331605]  do_exit+0x59a/0x1440
+[19079.331630]  do_group_exit+0x6d/0x120
+[19079.331656]  __x64_sys_exit_group+0x32/0x40
+[19079.331681]  x64_sys_call+0x1ec9/0x2730
+[19079.331710]  do_syscall_64+0x5e/0x90
+[19079.331734]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[19079.331912] value changed: 0x00000003 -> 0x00000002
+
+[19079.332427] Reported by Kernel Concurrency Sanitizer on:
+[19079.332721] CPU: 1 PID: 22213 Comm: (udev-worker) Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19079.876647] BUG: KCSAN: data-race in tick_nohz_idle_stop_tick / tick_nohz_next_event
+
+[19079.877175] write to 0xffffffffb5f50eb0 of 4 bytes by task 0 on cpu 8:
+[19079.877458]  tick_nohz_idle_stop_tick+0x3bd/0x4b0
+[19079.877479]  do_idle+0x20a/0x260
+[19079.877499]  cpu_startup_entry+0x31/0x40
+[19079.877519]  start_secondary+0x119/0x140
+[19079.877538]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19079.877667] read to 0xffffffffb5f50eb0 of 4 bytes by task 0 on cpu 3:
+[19079.877934]  tick_nohz_next_event+0x11c/0x220
+[19079.877953]  tick_nohz_idle_stop_tick+0x2c5/0x4b0
+[19079.877973]  do_idle+0x20a/0x260
+[19079.877991]  cpu_startup_entry+0x31/0x40
+[19079.878011]  start_secondary+0x119/0x140
+[19079.878029]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19079.878193] value changed: 0x00000008 -> 0xffffffff
+
+[19079.878531] Reported by Kernel Concurrency Sanitizer on:
+[19079.878771] CPU: 3 PID: 0 Comm: swapper/3 Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19087.492391] BUG: KCSAN: data-race in _find_next_bit+0x4f/0xd0
+
+[19087.493062] race at unknown origin, with read to 0xffff978c80071338 of 8 bytes by interrupt on cpu 4:
+[19087.493611]  _find_next_bit+0x4f/0xd0
+[19087.493637]  _nohz_idle_balance.isra.0+0x9b/0x3b0
+[19087.493661]  run_rebalance_domains+0x7c/0x90
+[19087.493683]  handle_softirqs+0xf4/0x2e0
+[19087.493707]  __irq_exit_rcu+0x78/0xd0
+[19087.493727]  irq_exit_rcu+0x12/0x20
+[19087.493748]  sysvec_call_function_single+0xb4/0xd0
+[19087.493773]  asm_sysvec_call_function_single+0x1f/0x30
+[19087.493797]  pv_native_safe_halt+0xf/0x20
+[19087.493822]  arch_cpu_idle+0xd/0x20
+[19087.493849]  default_idle_call+0x34/0xf0
+[19087.493877]  do_idle+0x20f/0x260
+[19087.493905]  cpu_startup_entry+0x31/0x40
+[19087.493925]  start_secondary+0x119/0x140
+[19087.493943]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19087.494148] value changed: 0x000000000000f63e -> 0x000000000000f6be
+
+[19087.494757] Reported by Kernel Concurrency Sanitizer on:
+[19087.495060] CPU: 4 PID: 0 Comm: swapper/4 Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19087.724101] BUG: KCSAN: data-race in get_cpu_sleep_time_us.part.0 / tick_nohz_idle_exit
+
+[19087.724778] read to 0xffff978d37b64b40 of 1 bytes by task 22349 on cpu 14:
+[19087.725196]  get_cpu_sleep_time_us.part.0+0xb2/0x160
+[19087.725228]  get_cpu_idle_time_us+0x88/0xb0
+[19087.725252]  get_idle_time+0x73/0xa0
+[19087.725279]  uptime_proc_show+0xeb/0x250
+[19087.725306]  seq_read_iter+0x2bf/0x870
+[19087.725332]  proc_reg_read_iter+0x94/0x130
+[19087.725357]  vfs_read+0x349/0x570
+[19087.725378]  ksys_read+0xaa/0x140
+[19087.725398]  __x64_sys_read+0x4f/0x70
+[19087.725422]  x64_sys_call+0x19f9/0x2730
+[19087.725466]  do_syscall_64+0x5e/0x90
+[19087.725510]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[19087.725847] write to 0xffff978d37b64b40 of 1 bytes by task 0 on cpu 13:
+[19087.726290]  tick_nohz_idle_exit+0x107/0x180
+[19087.726321]  do_idle+0x160/0x260
+[19087.726348]  cpu_startup_entry+0x31/0x40
+[19087.726377]  start_secondary+0x119/0x140
+[19087.726403]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19087.726592] Reported by Kernel Concurrency Sanitizer on:
+[19087.726886] CPU: 13 PID: 0 Comm: swapper/13 Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19087.737590] BUG: KCSAN: data-race in get_cpu_sleep_time_us.part.0 / tick_nohz_idle_enter
+
+[19087.738254] read to 0xffff978d378e4b40 of 1 bytes by task 22349 on cpu 14:
+[19087.738680]  get_cpu_sleep_time_us.part.0+0xb2/0x160
+[19087.738738]  get_cpu_idle_time_us+0x88/0xb0
+[19087.738763]  get_idle_time+0x73/0xa0
+[19087.738790]  uptime_proc_show+0xeb/0x250
+[19087.738819]  seq_read_iter+0x2bf/0x870
+[19087.738838]  proc_reg_read_iter+0x94/0x130
+[19087.738854]  vfs_read+0x349/0x570
+[19087.738874]  ksys_read+0xaa/0x140
+[19087.738895]  __x64_sys_read+0x4f/0x70
+[19087.738916]  x64_sys_call+0x19f9/0x2730
+[19087.738946]  do_syscall_64+0x5e/0x90
+[19087.738967]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[19087.739178] write to 0xffff978d378e4b40 of 1 bytes by task 0 on cpu 3:
+[19087.739564]  tick_nohz_idle_enter+0x6b/0x110
+[19087.739611]  do_idle+0x48/0x260
+[19087.739639]  cpu_startup_entry+0x31/0x40
+[19087.739668]  start_secondary+0x119/0x140
+[19087.739692]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19087.739890] Reported by Kernel Concurrency Sanitizer on:
+[19087.740188] CPU: 3 PID: 0 Comm: swapper/3 Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19091.045822] BUG: KCSAN: data-race in get_cpu_sleep_time_us.part.0 / tick_nohz_idle_exit
+
+[19091.046520] read to 0xffff978d37864b40 of 1 bytes by task 22351 on cpu 10:
+[19091.046928]  get_cpu_sleep_time_us.part.0+0xb2/0x160
+[19091.046950]  get_cpu_idle_time_us+0x88/0xb0
+[19091.046969]  get_idle_time+0x73/0xa0
+[19091.046989]  uptime_proc_show+0xeb/0x250
+[19091.047015]  seq_read_iter+0x2bf/0x870
+[19091.047039]  proc_reg_read_iter+0x94/0x130
+[19091.047060]  vfs_read+0x349/0x570
+[19091.047082]  ksys_read+0xaa/0x140
+[19091.047102]  __x64_sys_read+0x4f/0x70
+[19091.047123]  x64_sys_call+0x19f9/0x2730
+[19091.047151]  do_syscall_64+0x5e/0x90
+[19091.047178]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[19091.047375] write to 0xffff978d37864b40 of 1 bytes by task 0 on cpu 1:
+[19091.047756]  tick_nohz_idle_exit+0x7a/0x180
+[19091.047784]  do_idle+0x160/0x260
+[19091.047837]  cpu_startup_entry+0x31/0x40
+[19091.047866]  start_secondary+0x119/0x140
+[19091.047889]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19091.048093] Reported by Kernel Concurrency Sanitizer on:
+[19091.048439] CPU: 1 PID: 0 Comm: swapper/1 Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19091.128333] BUG: KCSAN: data-race in _find_next_bit+0x4f/0xd0
+
+[19091.128941] race at unknown origin, with read to 0xffff978c80071338 of 8 bytes by interrupt on cpu 5:
+[19091.129513]  _find_next_bit+0x4f/0xd0
+[19091.129539]  _nohz_idle_balance.isra.0+0x9b/0x3b0
+[19091.129565]  run_rebalance_domains+0x7c/0x90
+[19091.129582]  handle_softirqs+0xf4/0x2e0
+[19091.129601]  __do_softirq+0x14/0x1a
+[19091.129661]  do_softirq.part.0+0x7a/0xa0
+[19091.129682]  do_softirq+0x25/0x30
+[19091.129705]  flush_smp_call_function_queue+0xa9/0xb0
+[19091.129732]  do_idle+0x171/0x260
+[19091.129751]  cpu_startup_entry+0x31/0x40
+[19091.129772]  start_secondary+0x119/0x140
+[19091.129790]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19091.129992] value changed: 0x00000000000048b8 -> 0x0000000000000ab8
+
+[19091.130541] Reported by Kernel Concurrency Sanitizer on:
+[19091.130810] CPU: 5 PID: 0 Comm: swapper/5 Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19094.616383] BUG: KCSAN: data-race in _find_next_bit+0x4f/0xd0
+
+[19094.617022] race at unknown origin, with read to 0xffff978c80071338 of 8 bytes by interrupt on cpu 0:
+[19094.617873]  _find_next_bit+0x4f/0xd0
+[19094.617909]  _nohz_idle_balance.isra.0+0x1f9/0x3b0
+[19094.617934]  run_rebalance_domains+0x7c/0x90
+[19094.617956]  handle_softirqs+0xf4/0x2e0
+[19094.617978]  __do_softirq+0x14/0x1a
+[19094.618003]  do_softirq.part.0+0x7a/0xa0
+[19094.618024]  do_softirq+0x25/0x30
+[19094.618044]  flush_smp_call_function_queue+0xa9/0xb0
+[19094.618074]  do_idle+0x171/0x260
+[19094.618094]  cpu_startup_entry+0x31/0x40
+[19094.618115]  rest_init+0x11e/0x120
+[19094.618139]  arch_call_rest_init+0x1b/0x50
+[19094.618164]  start_kernel+0x659/0x990
+[19094.618187]  x86_64_start_reservations+0x25/0x40
+[19094.618218]  __pfx_reserve_bios_regions+0x0/0x10
+[19094.618245]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19094.618458] value changed: 0x0000000000009fbb -> 0x000000000000ffbf
+
+[19094.619078] Reported by Kernel Concurrency Sanitizer on:
+[19094.619465] CPU: 0 PID: 0 Comm: swapper/0 Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19096.129674] BUG: KCSAN: data-race in get_cpu_sleep_time_us.part.0 / tick_nohz_idle_exit
+
+[19096.130385] read to 0xffff978d37b64b40 of 1 bytes by task 22355 on cpu 9:
+[19096.130789]  get_cpu_sleep_time_us.part.0+0xb2/0x160
+[19096.130814]  get_cpu_idle_time_us+0x88/0xb0
+[19096.130832]  get_idle_time+0x73/0xa0
+[19096.130856]  uptime_proc_show+0xeb/0x250
+[19096.130885]  seq_read_iter+0x2bf/0x870
+[19096.130907]  proc_reg_read_iter+0x94/0x130
+[19096.130928]  vfs_read+0x349/0x570
+[19096.130950]  ksys_read+0xaa/0x140
+[19096.130969]  __x64_sys_read+0x4f/0x70
+[19096.130985]  x64_sys_call+0x19f9/0x2730
+[19096.131012]  do_syscall_64+0x5e/0x90
+[19096.131037]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[19096.131254] write to 0xffff978d37b64b40 of 1 bytes by task 0 on cpu 13:
+[19096.131656]  tick_nohz_idle_exit+0x107/0x180
+[19096.131687]  do_idle+0x160/0x260
+[19096.131714]  cpu_startup_entry+0x31/0x40
+[19096.131740]  start_secondary+0x119/0x140
+[19096.131766]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19096.131963] Reported by Kernel Concurrency Sanitizer on:
+[19096.132296] CPU: 13 PID: 0 Comm: swapper/13 Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19098.236305] BUG: KCSAN: data-race in _find_next_bit+0x4f/0xd0
+
+[19098.236905] race at unknown origin, with read to 0xffff978c80071338 of 8 bytes by interrupt on cpu 0:
+[19098.237486]  _find_next_bit+0x4f/0xd0
+[19098.237514]  _nohz_idle_balance.isra.0+0x113/0x3b0
+[19098.237539]  run_rebalance_domains+0x7c/0x90
+[19098.237562]  handle_softirqs+0xf4/0x2e0
+[19098.237586]  __do_softirq+0x14/0x1a
+[19098.237611]  do_softirq.part.0+0x7a/0xa0
+[19098.237631]  do_softirq+0x25/0x30
+[19098.237651]  flush_smp_call_function_queue+0xa9/0xb0
+[19098.237679]  do_idle+0x171/0x260
+[19098.237705]  cpu_startup_entry+0x31/0x40
+[19098.237732]  rest_init+0x11e/0x120
+[19098.237764]  arch_call_rest_init+0x1b/0x50
+[19098.237782]  start_kernel+0x659/0x990
+[19098.237798]  x86_64_start_reservations+0x25/0x40
+[19098.237818]  __pfx_reserve_bios_regions+0x0/0x10
+[19098.237839]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19098.238029] value changed: 0x0000000000004213 -> 0x000000000000eab7
+
+[19098.238580] Reported by Kernel Concurrency Sanitizer on:
+[19098.238884] CPU: 0 PID: 0 Comm: swapper/0 Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19099.140297] BUG: KCSAN: data-race in tick_nohz_idle_stop_tick / tick_nohz_next_event
+
+[19099.140962] write to 0xffffffffb5f50eb0 of 4 bytes by task 0 on cpu 3:
+[19099.141422]  tick_nohz_idle_stop_tick+0x3bd/0x4b0
+[19099.141453]  do_idle+0x20a/0x260
+[19099.141485]  cpu_startup_entry+0x31/0x40
+[19099.141512]  start_secondary+0x119/0x140
+[19099.141537]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19099.141782] read to 0xffffffffb5f50eb0 of 4 bytes by task 0 on cpu 12:
+[19099.142228]  tick_nohz_next_event+0x11c/0x220
+[19099.142248]  tick_nohz_idle_stop_tick+0x2c5/0x4b0
+[19099.142268]  do_idle+0x20a/0x260
+[19099.142288]  cpu_startup_entry+0x31/0x40
+[19099.142318]  start_secondary+0x119/0x140
+[19099.142342]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19099.142574] value changed: 0x00000003 -> 0xffffffff
+
+[19099.143072] Reported by Kernel Concurrency Sanitizer on:
+[19099.143381] CPU: 12 PID: 0 Comm: swapper/12 Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19100.304450] BUG: KCSAN: data-race in tick_nohz_idle_stop_tick / tick_nohz_idle_stop_tick
+
+[19100.305282] write to 0xffffffffb5f50eb0 of 4 bytes by task 0 on cpu 9:
+[19100.305714]  tick_nohz_idle_stop_tick+0x3bd/0x4b0
+[19100.305745]  do_idle+0x20a/0x260
+[19100.305774]  cpu_startup_entry+0x31/0x40
+[19100.305796]  start_secondary+0x119/0x140
+[19100.305815]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19100.306043] read to 0xffffffffb5f50eb0 of 4 bytes by task 0 on cpu 12:
+[19100.306444]  tick_nohz_idle_stop_tick+0x14a/0x4b0
+[19100.306476]  do_idle+0x20a/0x260
+[19100.306505]  cpu_startup_entry+0x31/0x40
+[19100.306532]  start_secondary+0x119/0x140
+[19100.306556]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19100.306766] value changed: 0x00000009 -> 0xffffffff
+
+[19100.307285] Reported by Kernel Concurrency Sanitizer on:
+[19100.307610] CPU: 12 PID: 0 Comm: swapper/12 Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19100.308630] BUG: KCSAN: data-race in tick_nohz_next_event+0x11c/0x220
+
+[19100.309270] race at unknown origin, with read to 0xffffffffb5f50eb0 of 4 bytes by task 0 on cpu 11:
+[19100.309788]  tick_nohz_next_event+0x11c/0x220
+[19100.309816]  tick_nohz_idle_stop_tick+0x2c5/0x4b0
+[19100.309842]  do_idle+0x20a/0x260
+[19100.309870]  cpu_startup_entry+0x31/0x40
+[19100.309891]  start_secondary+0x119/0x140
+[19100.309927]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19100.310135] value changed: 0x00000009 -> 0xffffffff
+
+[19100.310625] Reported by Kernel Concurrency Sanitizer on:
+[19100.310977] CPU: 11 PID: 0 Comm: swapper/11 Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19101.216094] BUG: KCSAN: data-race in get_cpu_sleep_time_us.part.0 / tick_nohz_idle_stop_tick
+
+[19101.216834] read to 0xffff978d378e4b40 of 1 bytes by task 22360 on cpu 2:
+[19101.217327]  get_cpu_sleep_time_us.part.0+0xb2/0x160
+[19101.217360]  get_cpu_idle_time_us+0x88/0xb0
+[19101.217389]  get_idle_time+0x73/0xa0
+[19101.217419]  uptime_proc_show+0xeb/0x250
+[19101.217451]  seq_read_iter+0x2bf/0x870
+[19101.217476]  proc_reg_read_iter+0x94/0x130
+[19101.217500]  vfs_read+0x349/0x570
+[19101.217525]  ksys_read+0xaa/0x140
+[19101.217550]  __x64_sys_read+0x4f/0x70
+[19101.217575]  x64_sys_call+0x19f9/0x2730
+[19101.217604]  do_syscall_64+0x5e/0x90
+[19101.217633]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[19101.217943] write to 0xffff978d378e4b40 of 1 bytes by task 0 on cpu 3:
+[19101.218423]  tick_nohz_idle_stop_tick+0x166/0x4b0
+[19101.218453]  do_idle+0x20a/0x260
+[19101.218484]  cpu_startup_entry+0x31/0x40
+[19101.218516]  start_secondary+0x119/0x140
+[19101.218546]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19101.218766] Reported by Kernel Concurrency Sanitizer on:
+[19101.219067] CPU: 3 PID: 0 Comm: swapper/3 Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19107.204387] BUG: KCSAN: data-race in _find_next_bit+0x4f/0xd0
+
+[19107.204966] race at unknown origin, with read to 0xffff978c80071338 of 8 bytes by interrupt on cpu 14:
+[19107.205498]  _find_next_bit+0x4f/0xd0
+[19107.205526]  _nohz_idle_balance.isra.0+0x113/0x3b0
+[19107.205547]  run_rebalance_domains+0x7c/0x90
+[19107.205564]  handle_softirqs+0xf4/0x2e0
+[19107.205587]  __do_softirq+0x14/0x1a
+[19107.205612]  do_softirq.part.0+0x7a/0xa0
+[19107.205635]  do_softirq+0x25/0x30
+[19107.205653]  flush_smp_call_function_queue+0xa9/0xb0
+[19107.205706]  do_idle+0x171/0x260
+[19107.205725]  cpu_startup_entry+0x31/0x40
+[19107.205751]  start_secondary+0x119/0x140
+[19107.205777]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19107.206005] value changed: 0x000000000000f47c -> 0x000000000000f5bf
+
+[19107.206597] Reported by Kernel Concurrency Sanitizer on:
+[19107.206900] CPU: 14 PID: 0 Comm: swapper/14 Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19109.300397] BUG: KCSAN: data-race in tick_nohz_idle_stop_tick / tick_nohz_idle_stop_tick
+
+[19109.301076] write to 0xffffffffb5f50eb0 of 4 bytes by task 0 on cpu 9:
+[19109.301493]  tick_nohz_idle_stop_tick+0x3bd/0x4b0
+[19109.301522]  do_idle+0x20a/0x260
+[19109.301549]  cpu_startup_entry+0x31/0x40
+[19109.301577]  start_secondary+0x119/0x140
+[19109.301600]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19109.301808] read to 0xffffffffb5f50eb0 of 4 bytes by task 0 on cpu 3:
+[19109.302191]  tick_nohz_idle_stop_tick+0x14a/0x4b0
+[19109.302222]  do_idle+0x20a/0x260
+[19109.302251]  cpu_startup_entry+0x31/0x40
+[19109.302281]  start_secondary+0x119/0x140
+[19109.302305]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19109.302513] Reported by Kernel Concurrency Sanitizer on:
+[19109.302840] CPU: 3 PID: 0 Comm: swapper/3 Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19109.320405] BUG: KCSAN: data-race in tick_nohz_idle_stop_tick / tick_nohz_next_event
+
+[19109.321118] write to 0xffffffffb5f50eb0 of 4 bytes by task 0 on cpu 7:
+[19109.321512]  tick_nohz_idle_stop_tick+0x3bd/0x4b0
+[19109.321536]  do_idle+0x20a/0x260
+[19109.321593]  cpu_startup_entry+0x31/0x40
+[19109.321621]  start_secondary+0x119/0x140
+[19109.321648]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19109.321865] read to 0xffffffffb5f50eb0 of 4 bytes by task 0 on cpu 5:
+[19109.322225]  tick_nohz_next_event+0x11c/0x220
+[19109.322254]  tick_nohz_idle_stop_tick+0x2c5/0x4b0
+[19109.322282]  do_idle+0x20a/0x260
+[19109.322308]  cpu_startup_entry+0x31/0x40
+[19109.322335]  start_secondary+0x119/0x140
+[19109.322359]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19109.322575] value changed: 0x00000007 -> 0xffffffff
+
+[19109.323132] Reported by Kernel Concurrency Sanitizer on:
+[19109.323519] CPU: 5 PID: 0 Comm: swapper/5 Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19109.444327] BUG: KCSAN: data-race in tick_sched_do_timer / tick_sched_do_timer
+
+[19109.445029] read to 0xffffffffb5f50eb0 of 4 bytes by interrupt on cpu 7:
+[19109.445539]  tick_sched_do_timer+0x35/0x130
+[19109.445567]  tick_sched_timer+0x4d/0xd0
+[19109.445585]  __hrtimer_run_queues+0x26e/0x4c0
+[19109.445603]  hrtimer_interrupt+0x1eb/0x400
+[19109.445625]  hv_stimer0_isr+0x5c/0x70
+[19109.445654]  __sysvec_hyperv_stimer0+0x68/0xb0
+[19109.445686]  sysvec_hyperv_stimer0+0xaf/0xd0
+[19109.445711]  asm_sysvec_hyperv_stimer0+0x1f/0x30
+[19109.445736]  tick_nohz_idle_enter+0xed/0x110
+[19109.445762]  do_idle+0x48/0x260
+[19109.445791]  cpu_startup_entry+0x31/0x40
+[19109.445813]  start_secondary+0x119/0x140
+[19109.445852]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19109.446049] write to 0xffffffffb5f50eb0 of 4 bytes by interrupt on cpu 14:
+[19109.446479]  tick_sched_do_timer+0x116/0x130
+[19109.446506]  tick_sched_timer+0x4d/0xd0
+[19109.446532]  __hrtimer_run_queues+0x26e/0x4c0
+[19109.446551]  hrtimer_interrupt+0x1eb/0x400
+[19109.446569]  hv_stimer0_isr+0x5c/0x70
+[19109.446586]  __sysvec_hyperv_stimer0+0x68/0xb0
+[19109.446606]  sysvec_hyperv_stimer0+0xaf/0xd0
+[19109.446629]  asm_sysvec_hyperv_stimer0+0x1f/0x30
+[19109.446652]  schedule_idle+0x31/0x50
+[19109.446676]  do_idle+0x176/0x260
+[19109.446704]  cpu_startup_entry+0x31/0x40
+[19109.446762]  start_secondary+0x119/0x140
+[19109.446786]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19109.446996] value changed: 0xffffffff -> 0x0000000b
+
+[19109.447522] Reported by Kernel Concurrency Sanitizer on:
+[19109.447815] CPU: 14 PID: 0 Comm: swapper/14 Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19110.744491] BUG: KCSAN: data-race in _find_next_bit+0x4f/0xd0
+
+[19110.745075] race at unknown origin, with read to 0xffff978c80071338 of 8 bytes by interrupt on cpu 0:
+[19110.745592]  _find_next_bit+0x4f/0xd0
+[19110.745621]  _nohz_idle_balance.isra.0+0x1f9/0x3b0
+[19110.745644]  run_rebalance_domains+0x7c/0x90
+[19110.745662]  handle_softirqs+0xf4/0x2e0
+[19110.745679]  __do_softirq+0x14/0x1a
+[19110.745700]  do_softirq.part.0+0x7a/0xa0
+[19110.745716]  do_softirq+0x25/0x30
+[19110.745732]  flush_smp_call_function_queue+0xa9/0xb0
+[19110.745753]  do_idle+0x171/0x260
+[19110.745773]  cpu_startup_entry+0x31/0x40
+[19110.745793]  rest_init+0x11e/0x120
+[19110.745814]  arch_call_rest_init+0x1b/0x50
+[19110.745838]  start_kernel+0x659/0x990
+[19110.745862]  x86_64_start_reservations+0x25/0x40
+[19110.745891]  __pfx_reserve_bios_regions+0x0/0x10
+[19110.745919]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19110.746105] value changed: 0x000000000000f37f -> 0x000000000000f77f
+
+[19110.746624] Reported by Kernel Concurrency Sanitizer on:
+[19110.746918] CPU: 0 PID: 0 Comm: swapper/0 Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19111.377112] BUG: KCSAN: data-race in page_remove_rmap / page_remove_rmap
+
+[19111.377733] read-write (marked) to 0xffffe839c41d2570 of 4 bytes by task 22369 on cpu 8:
+[19111.378249]  page_remove_rmap+0xa1/0x450
+[19111.378274]  do_wp_page+0xaac/0x1380
+[19111.378302]  __handle_mm_fault+0xbfd/0xc50
+[19111.378324]  handle_mm_fault+0x138/0x470
+[19111.378346]  do_user_addr_fault+0x224/0x630
+[19111.378378]  exc_page_fault+0x73/0x160
+[19111.378423]  asm_exc_page_fault+0x2b/0x30
+[19111.378467]  __put_user_8+0x11/0x20
+[19111.378484]  exit_to_user_mode_prepare+0x1a2/0x1b0
+[19111.378505]  syscall_exit_to_user_mode+0x1f/0x30
+[19111.378525]  ret_from_fork+0x2d/0x60
+[19111.378554]  ret_from_fork_asm+0x1b/0x30
+
+[19111.378740] read to 0xffffe839c41d2570 of 4 bytes by task 22163 on cpu 13:
+[19111.379144]  page_remove_rmap+0x5e/0x450
+[19111.379172]  do_wp_page+0xaac/0x1380
+[19111.379200]  __handle_mm_fault+0xbfd/0xc50
+[19111.379221]  handle_mm_fault+0x138/0x470
+[19111.379242]  do_user_addr_fault+0x224/0x630
+[19111.379271]  exc_page_fault+0x73/0x160
+[19111.379295]  asm_exc_page_fault+0x2b/0x30
+[19111.379324]  __put_user_8+0x11/0x20
+[19111.379345]  exit_to_user_mode_prepare+0x1a2/0x1b0
+[19111.379372]  syscall_exit_to_user_mode+0x1f/0x30
+[19111.379401]  do_syscall_64+0x6b/0x90
+[19111.379419]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[19111.379590] value changed: 0x00000001 -> 0x00000000
+
+[19111.380078] Reported by Kernel Concurrency Sanitizer on:
+[19111.380412] CPU: 13 PID: 22163 Comm: bash Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19114.140573] BUG: KCSAN: data-race in _find_next_bit+0x4f/0xd0
+
+[19114.141212] race at unknown origin, with read to 0xffff978c80071338 of 8 bytes by interrupt on cpu 15:
+[19114.141811]  _find_next_bit+0x4f/0xd0
+[19114.141838]  _nohz_idle_balance.isra.0+0x113/0x3b0
+[19114.141864]  run_rebalance_domains+0x7c/0x90
+[19114.141886]  handle_softirqs+0xf4/0x2e0
+[19114.141902]  __irq_exit_rcu+0x78/0xd0
+[19114.141923]  irq_exit_rcu+0x12/0x20
+[19114.141945]  sysvec_call_function_single+0xb4/0xd0
+[19114.141971]  asm_sysvec_call_function_single+0x1f/0x30
+[19114.142006]  pv_native_safe_halt+0xf/0x20
+[19114.142030]  arch_cpu_idle+0xd/0x20
+[19114.142056]  default_idle_call+0x34/0xf0
+[19114.142085]  do_idle+0x20f/0x260
+[19114.142113]  cpu_startup_entry+0x31/0x40
+[19114.142140]  start_secondary+0x119/0x140
+[19114.142188]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19114.142446] value changed: 0x000000000000e02c -> 0x000000000000fafb
+
+[19114.143052] Reported by Kernel Concurrency Sanitizer on:
+[19114.143778] CPU: 15 PID: 0 Comm: swapper/15 Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19116.419023] BUG: KCSAN: data-race in get_cpu_sleep_time_us.part.0 / tick_nohz_idle_exit
+
+[19116.419652] read to 0xffff978d378a4b40 of 1 bytes by task 22372 on cpu 7:
+[19116.420067]  get_cpu_sleep_time_us.part.0+0xb2/0x160
+[19116.420098]  get_cpu_idle_time_us+0x88/0xb0
+[19116.420124]  get_idle_time+0x73/0xa0
+[19116.420221]  uptime_proc_show+0xeb/0x250
+[19116.420249]  seq_read_iter+0x2bf/0x870
+[19116.420273]  proc_reg_read_iter+0x94/0x130
+[19116.420295]  vfs_read+0x349/0x570
+[19116.420317]  ksys_read+0xaa/0x140
+[19116.420339]  __x64_sys_read+0x4f/0x70
+[19116.420361]  x64_sys_call+0x19f9/0x2730
+[19116.420393]  do_syscall_64+0x5e/0x90
+[19116.420431]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[19116.420646] write to 0xffff978d378a4b40 of 1 bytes by task 0 on cpu 2:
+[19116.421031]  tick_nohz_idle_exit+0x7a/0x180
+[19116.421059]  do_idle+0x160/0x260
+[19116.421087]  cpu_startup_entry+0x31/0x40
+[19116.421114]  start_secondary+0x119/0x140
+[19116.421139]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19116.421329] Reported by Kernel Concurrency Sanitizer on:
+[19116.421640] CPU: 2 PID: 0 Comm: swapper/2 Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19117.144378] BUG: KCSAN: data-race in _find_next_bit+0x4f/0xd0
+
+[19117.145031] race at unknown origin, with read to 0xffff978c80071338 of 8 bytes by interrupt on cpu 1:
+[19117.145599]  _find_next_bit+0x4f/0xd0
+[19117.145627]  _nohz_idle_balance.isra.0+0x113/0x3b0
+[19117.145655]  run_rebalance_domains+0x7c/0x90
+[19117.145672]  handle_softirqs+0xf4/0x2e0
+[19117.145689]  __do_softirq+0x14/0x1a
+[19117.145709]  do_softirq.part.0+0x7a/0xa0
+[19117.145724]  do_softirq+0x25/0x30
+[19117.145739]  flush_smp_call_function_queue+0xa9/0xb0
+[19117.145763]  do_idle+0x171/0x260
+[19117.145790]  cpu_startup_entry+0x31/0x40
+[19117.145817]  start_secondary+0x119/0x140
+[19117.145843]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19117.146047] value changed: 0x0000000000009d63 -> 0x000000000000bd67
+
+[19117.146639] Reported by Kernel Concurrency Sanitizer on:
+[19117.146923] CPU: 1 PID: 0 Comm: swapper/1 Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19119.356356] BUG: KCSAN: data-race in tick_nohz_idle_stop_tick / tick_nohz_idle_stop_tick
+
+[19119.357053] write to 0xffffffffb5f50eb0 of 4 bytes by task 0 on cpu 3:
+[19119.357457]  tick_nohz_idle_stop_tick+0x3bd/0x4b0
+[19119.357478]  do_idle+0x20a/0x260
+[19119.357504]  cpu_startup_entry+0x31/0x40
+[19119.357531]  start_secondary+0x119/0x140
+[19119.357557]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19119.357740] read to 0xffffffffb5f50eb0 of 4 bytes by task 0 on cpu 12:
+[19119.358036]  tick_nohz_idle_stop_tick+0x14a/0x4b0
+[19119.358077]  do_idle+0x20a/0x260
+[19119.358103]  cpu_startup_entry+0x31/0x40
+[19119.358131]  start_secondary+0x119/0x140
+[19119.358155]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19119.358308] value changed: 0x00000003 -> 0xffffffff
+
+[19119.358681] Reported by Kernel Concurrency Sanitizer on:
+[19119.359049] CPU: 12 PID: 0 Comm: swapper/12 Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19120.720340] BUG: KCSAN: data-race in _find_next_bit+0x4f/0xd0
+
+[19120.721055] race at unknown origin, with read to 0xffff978c80071338 of 8 bytes by interrupt on cpu 4:
+[19120.721586]  _find_next_bit+0x4f/0xd0
+[19120.721610]  _nohz_idle_balance.isra.0+0x9b/0x3b0
+[19120.721635]  run_rebalance_domains+0x7c/0x90
+[19120.721657]  handle_softirqs+0xf4/0x2e0
+[19120.721681]  __irq_exit_rcu+0x78/0xd0
+[19120.721702]  irq_exit_rcu+0x12/0x20
+[19120.721724]  sysvec_call_function_single+0xb4/0xd0
+[19120.721749]  asm_sysvec_call_function_single+0x1f/0x30
+[19120.721774]  pv_native_safe_halt+0xf/0x20
+[19120.721798]  arch_cpu_idle+0xd/0x20
+[19120.721824]  default_idle_call+0x34/0xf0
+[19120.721886]  do_idle+0x20f/0x260
+[19120.721912]  cpu_startup_entry+0x31/0x40
+[19120.721940]  start_secondary+0x119/0x140
+[19120.721964]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19120.722167] value changed: 0x0000000000003ef4 -> 0x000000000000d6ff
+
+[19120.722766] Reported by Kernel Concurrency Sanitizer on:
+[19120.723085] CPU: 4 PID: 0 Comm: swapper/4 Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19124.208319] BUG: KCSAN: data-race in _find_next_bit+0x4f/0xd0
+
+[19124.208917] race at unknown origin, with read to 0xffff978c80071338 of 8 bytes by interrupt on cpu 2:
+[19124.209494]  _find_next_bit+0x4f/0xd0
+[19124.209520]  _nohz_idle_balance.isra.0+0x113/0x3b0
+[19124.209539]  run_rebalance_domains+0x7c/0x90
+[19124.209556]  handle_softirqs+0xf4/0x2e0
+[19124.209572]  __do_softirq+0x14/0x1a
+[19124.209599]  do_softirq.part.0+0x7a/0xa0
+[19124.209621]  do_softirq+0x25/0x30
+[19124.209641]  flush_smp_call_function_queue+0xa9/0xb0
+[19124.209672]  do_idle+0x171/0x260
+[19124.209740]  cpu_startup_entry+0x31/0x40
+[19124.209769]  start_secondary+0x119/0x140
+[19124.209797]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19124.210026] value changed: 0x0000000000004c55 -> 0x000000000000fd7f
+
+[19124.210562] Reported by Kernel Concurrency Sanitizer on:
+[19124.210844] CPU: 2 PID: 0 Comm: swapper/2 Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19131.844341] BUG: KCSAN: data-race in _find_next_bit+0x4f/0xd0
+
+[19131.844927] race at unknown origin, with read to 0xffff978c80071338 of 8 bytes by interrupt on cpu 0:
+[19131.845342]  _find_next_bit+0x4f/0xd0
+[19131.845379]  _nohz_idle_balance.isra.0+0x9b/0x3b0
+[19131.845404]  run_rebalance_domains+0x7c/0x90
+[19131.845428]  handle_softirqs+0xf4/0x2e0
+[19131.845451]  __irq_exit_rcu+0x78/0xd0
+[19131.845472]  irq_exit_rcu+0x12/0x20
+[19131.845494]  sysvec_call_function_single+0xb4/0xd0
+[19131.845520]  asm_sysvec_call_function_single+0x1f/0x30
+[19131.845546]  pv_native_safe_halt+0xf/0x20
+[19131.845570]  arch_cpu_idle+0xd/0x20
+[19131.845598]  default_idle_call+0x34/0xf0
+[19131.845625]  do_idle+0x20f/0x260
+[19131.845652]  cpu_startup_entry+0x31/0x40
+[19131.845681]  rest_init+0x11e/0x120
+[19131.845709]  arch_call_rest_init+0x1b/0x50
+[19131.845733]  start_kernel+0x659/0x990
+[19131.845755]  x86_64_start_reservations+0x25/0x40
+[19131.845784]  __pfx_reserve_bios_regions+0x0/0x10
+[19131.845813]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19131.845981] value changed: 0x0000000000009465 -> 0x0000000000009065
+
+[19131.846463] Reported by Kernel Concurrency Sanitizer on:
+[19131.846679] CPU: 0 PID: 0 Comm: swapper/0 Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19135.132197] BUG: KCSAN: data-race in _find_next_and_bit+0x53/0x120
+
+[19135.132723] race at unknown origin, with read to 0xffff978c80071338 of 8 bytes by interrupt on cpu 1:
+[19135.133280]  _find_next_and_bit+0x53/0x120
+[19135.133307]  trigger_load_balance+0x10f/0x380
+[19135.133332]  scheduler_tick+0x123/0x2c0
+[19135.133356]  update_process_times+0xc7/0xf0
+[19135.133381]  tick_sched_handle+0x4d/0xc0
+[19135.133407]  tick_sched_timer+0xac/0xd0
+[19135.133466]  __hrtimer_run_queues+0x26e/0x4c0
+[19135.133491]  hrtimer_interrupt+0x1eb/0x400
+[19135.133517]  hv_stimer0_isr+0x5c/0x70
+[19135.133543]  __sysvec_hyperv_stimer0+0x68/0xb0
+[19135.133573]  sysvec_hyperv_stimer0+0xaf/0xd0
+[19135.133598]  asm_sysvec_hyperv_stimer0+0x1f/0x30
+[19135.133624]  __tsan_func_entry+0x0/0x20
+[19135.133654]  hrtimer_try_to_cancel+0x31/0x1e0
+[19135.133680]  schedule_hrtimeout_range_clock+0xe4/0x1b0
+[19135.133706]  schedule_hrtimeout_range+0x38/0x50
+[19135.133730]  poll_schedule_timeout.constprop.0+0xa2/0x130
+[19135.133762]  do_sys_poll+0x513/0x760
+[19135.133791]  __x64_sys_poll+0xea/0x230
+[19135.133820]  x64_sys_call+0x144b/0x2730
+[19135.133851]  do_syscall_64+0x5e/0x90
+[19135.133876]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[19135.134071] value changed: 0x000000000000f7ed -> 0x0000000000000189
+
+[19135.134547] Reported by Kernel Concurrency Sanitizer on:
+[19135.134762] CPU: 1 PID: 22431 Comm: test_stress Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19136.382704] BUG: KCSAN: data-race in page_remove_rmap / page_remove_rmap
+
+[19136.383150] read-write (marked) to 0xffffe839c66922f0 of 4 bytes by task 22444 on cpu 8:
+[19136.383591]  page_remove_rmap+0xa1/0x450
+[19136.383610]  unmap_page_range+0xd47/0x1740
+[19136.383631]  unmap_single_vma+0xd9/0x150
+[19136.383651]  unmap_vmas+0x154/0x2c0
+[19136.383670]  exit_mmap+0x143/0x550
+[19136.383685]  __mmput+0x9f/0x1f0
+[19136.383702]  mmput+0x79/0x90
+[19136.383717]  do_exit+0x59a/0x1440
+[19136.383735]  do_group_exit+0x6d/0x120
+[19136.383754]  __x64_sys_exit_group+0x32/0x40
+[19136.383773]  x64_sys_call+0x1ec9/0x2730
+[19136.383793]  do_syscall_64+0x5e/0x90
+[19136.383812]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[19136.383989] read to 0xffffe839c66922f0 of 4 bytes by task 22443 on cpu 13:
+[19136.384354]  page_remove_rmap+0x5e/0x450
+[19136.384370]  unmap_page_range+0xd47/0x1740
+[19136.384390]  unmap_single_vma+0xd9/0x150
+[19136.384410]  unmap_vmas+0x154/0x2c0
+[19136.384429]  exit_mmap+0x143/0x550
+[19136.384443]  __mmput+0x9f/0x1f0
+[19136.384459]  mmput+0x79/0x90
+[19136.384474]  do_exit+0x59a/0x1440
+[19136.384492]  do_group_exit+0x6d/0x120
+[19136.384510]  __x64_sys_exit_group+0x32/0x40
+[19136.384529]  x64_sys_call+0x1ec9/0x2730
+[19136.384549]  do_syscall_64+0x5e/0x90
+[19136.384565]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[19136.384712] value changed: 0x00000022 -> 0x00000021
+
+[19136.385067] Reported by Kernel Concurrency Sanitizer on:
+[19136.385293] CPU: 13 PID: 22443 Comm: grep Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19137.432239] BUG: KCSAN: data-race in _find_next_bit+0x4f/0xd0
+
+[19137.432843] race at unknown origin, with read to 0xffff978c80071338 of 8 bytes by interrupt on cpu 0:
+[19137.433318]  _find_next_bit+0x4f/0xd0
+[19137.433335]  _nohz_idle_balance.isra.0+0x1f9/0x3b0
+[19137.433354]  run_rebalance_domains+0x7c/0x90
+[19137.433379]  handle_softirqs+0xf4/0x2e0
+[19137.433395]  __irq_exit_rcu+0x78/0xd0
+[19137.433411]  irq_exit_rcu+0x12/0x20
+[19137.433426]  sysvec_call_function_single+0xb4/0xd0
+[19137.433444]  asm_sysvec_call_function_single+0x1f/0x30
+[19137.433462]  pv_native_safe_halt+0xf/0x20
+[19137.433494]  arch_cpu_idle+0xd/0x20
+[19137.433514]  default_idle_call+0x34/0xf0
+[19137.433533]  do_idle+0x20f/0x260
+[19137.433553]  cpu_startup_entry+0x31/0x40
+[19137.433572]  rest_init+0x11e/0x120
+[19137.433592]  arch_call_rest_init+0x1b/0x50
+[19137.433609]  start_kernel+0x659/0x990
+[19137.433624]  x86_64_start_reservations+0x25/0x40
+[19137.433644]  __pfx_reserve_bios_regions+0x0/0x10
+[19137.433664]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19137.433805] value changed: 0x000000000000beef -> 0x000000000000bfef
+
+[19137.434247] Reported by Kernel Concurrency Sanitizer on:
+[19137.434513] CPU: 0 PID: 0 Comm: swapper/0 Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19137.956249] BUG: KCSAN: data-race in tick_nohz_next_event / tick_sched_do_timer
+
+[19137.956776] write to 0xffffffffb5f50eb0 of 4 bytes by interrupt on cpu 6:
+[19137.957050]  tick_sched_do_timer+0x116/0x130
+[19137.957069]  tick_sched_timer+0x4d/0xd0
+[19137.957087]  __hrtimer_run_queues+0x26e/0x4c0
+[19137.957104]  hrtimer_interrupt+0x1eb/0x400
+[19137.957122]  hv_stimer0_isr+0x5c/0x70
+[19137.957139]  __sysvec_hyperv_stimer0+0x68/0xb0
+[19137.957160]  sysvec_hyperv_stimer0+0xaf/0xd0
+[19137.957177]  asm_sysvec_hyperv_stimer0+0x1f/0x30
+[19137.957194]  exit_to_user_mode_prepare+0x177/0x1b0
+[19137.957214]  syscall_exit_to_user_mode+0x1f/0x30
+[19137.957232]  do_syscall_64+0x6b/0x90
+[19137.957250]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[19137.957411] read to 0xffffffffb5f50eb0 of 4 bytes by task 0 on cpu 11:
+[19137.957756]  tick_nohz_next_event+0x11c/0x220
+[19137.957785]  tick_nohz_idle_stop_tick+0x2c5/0x4b0
+[19137.957804]  do_idle+0x20a/0x260
+[19137.957824]  cpu_startup_entry+0x31/0x40
+[19137.957843]  start_secondary+0x119/0x140
+[19137.957861]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19137.958000] Reported by Kernel Concurrency Sanitizer on:
+[19137.958237] CPU: 11 PID: 0 Comm: swapper/11 Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19138.511261] BUG: KCSAN: data-race in get_cpu_sleep_time_us.part.0 / tick_nohz_idle_exit
+
+[19138.511676] read to 0xffff978d37ba4b40 of 1 bytes by task 22522 on cpu 2:
+[19138.511907]  get_cpu_sleep_time_us.part.0+0xb2/0x160
+[19138.511926]  get_cpu_idle_time_us+0x88/0xb0
+[19138.511944]  get_idle_time+0x73/0xa0
+[19138.511965]  uptime_proc_show+0xeb/0x250
+[19138.511984]  seq_read_iter+0x2bf/0x870
+[19138.512001]  proc_reg_read_iter+0x94/0x130
+[19138.512016]  vfs_read+0x349/0x570
+[19138.512031]  ksys_read+0xaa/0x140
+[19138.512046]  __x64_sys_read+0x4f/0x70
+[19138.512061]  x64_sys_call+0x19f9/0x2730
+[19138.512083]  do_syscall_64+0x5e/0x90
+[19138.512101]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[19138.512238] write to 0xffff978d37ba4b40 of 1 bytes by task 0 on cpu 14:
+[19138.512477]  tick_nohz_idle_exit+0x7a/0x180
+[19138.512496]  do_idle+0x160/0x260
+[19138.512515]  cpu_startup_entry+0x31/0x40
+[19138.512535]  start_secondary+0x119/0x140
+[19138.512552]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19138.512665] Reported by Kernel Concurrency Sanitizer on:
+[19138.512841] CPU: 14 PID: 0 Comm: swapper/14 Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19139.160260] BUG: KCSAN: data-race in tick_nohz_idle_stop_tick / tick_nohz_idle_stop_tick
+
+[19139.160782] write to 0xffffffffb5f50eb0 of 4 bytes by task 0 on cpu 7:
+[19139.161112]  tick_nohz_idle_stop_tick+0x3bd/0x4b0
+[19139.161132]  do_idle+0x20a/0x260
+[19139.161151]  cpu_startup_entry+0x31/0x40
+[19139.161170]  start_secondary+0x119/0x140
+[19139.161189]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19139.161326] read to 0xffffffffb5f50eb0 of 4 bytes by task 0 on cpu 11:
+[19139.161672]  tick_nohz_idle_stop_tick+0x14a/0x4b0
+[19139.161691]  do_idle+0x20a/0x260
+[19139.161710]  cpu_startup_entry+0x31/0x40
+[19139.161729]  start_secondary+0x119/0x140
+[19139.161746]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19139.161904] value changed: 0x00000007 -> 0xffffffff
+
+[19139.162328] Reported by Kernel Concurrency Sanitizer on:
+[19139.162561] CPU: 11 PID: 0 Comm: swapper/11 Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19140.560281] BUG: KCSAN: data-race in tick_nohz_idle_stop_tick / tick_nohz_next_event
+
+[19140.560832] write to 0xffffffffb5f50eb0 of 4 bytes by task 0 on cpu 10:
+[19140.561151]  tick_nohz_idle_stop_tick+0x3bd/0x4b0
+[19140.561171]  do_idle+0x20a/0x260
+[19140.561191]  cpu_startup_entry+0x31/0x40
+[19140.561210]  start_secondary+0x119/0x140
+[19140.561228]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19140.561380] read to 0xffffffffb5f50eb0 of 4 bytes by task 0 on cpu 6:
+[19140.561697]  tick_nohz_next_event+0x11c/0x220
+[19140.561715]  tick_nohz_idle_stop_tick+0x2c5/0x4b0
+[19140.561733]  do_idle+0x20a/0x260
+[19140.561752]  cpu_startup_entry+0x31/0x40
+[19140.561771]  start_secondary+0x119/0x140
+[19140.561788]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19140.561914] value changed: 0x0000000a -> 0xffffffff
+
+[19140.562264] Reported by Kernel Concurrency Sanitizer on:
+[19140.562485] CPU: 6 PID: 0 Comm: swapper/6 Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19143.980352] BUG: KCSAN: data-race in tick_nohz_idle_stop_tick / tick_nohz_idle_stop_tick
+
+[19143.980886] write to 0xffffffffb5f50eb0 of 4 bytes by task 0 on cpu 0:
+[19143.981154]  tick_nohz_idle_stop_tick+0x3bd/0x4b0
+[19143.981203]  do_idle+0x20a/0x260
+[19143.981223]  cpu_startup_entry+0x31/0x40
+[19143.981242]  rest_init+0x11e/0x120
+[19143.981263]  arch_call_rest_init+0x1b/0x50
+[19143.981281]  start_kernel+0x659/0x990
+[19143.981296]  x86_64_start_reservations+0x25/0x40
+[19143.981317]  __pfx_reserve_bios_regions+0x0/0x10
+[19143.981336]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19143.981486] read to 0xffffffffb5f50eb0 of 4 bytes by task 0 on cpu 11:
+[19143.981762]  tick_nohz_idle_stop_tick+0x14a/0x4b0
+[19143.981781]  do_idle+0x20a/0x260
+[19143.981799]  cpu_startup_entry+0x31/0x40
+[19143.981818]  start_secondary+0x119/0x140
+[19143.981837]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19143.981964] Reported by Kernel Concurrency Sanitizer on:
+[19143.982226] CPU: 11 PID: 0 Comm: swapper/11 Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19146.380236] BUG: KCSAN: data-race in _find_next_and_bit+0x53/0x120
+
+[19146.380766] race at unknown origin, with read to 0xffff978c80071338 of 8 bytes by interrupt on cpu 8:
+[19146.381231]  _find_next_and_bit+0x53/0x120
+[19146.381249]  trigger_load_balance+0x10f/0x380
+[19146.381297]  scheduler_tick+0x123/0x2c0
+[19146.381314]  update_process_times+0xc7/0xf0
+[19146.381331]  tick_sched_handle+0x4d/0xc0
+[19146.381349]  tick_sched_timer+0xac/0xd0
+[19146.381366]  __hrtimer_run_queues+0x26e/0x4c0
+[19146.381383]  hrtimer_interrupt+0x1eb/0x400
+[19146.381401]  hv_stimer0_isr+0x5c/0x70
+[19146.381419]  __sysvec_hyperv_stimer0+0x68/0xb0
+[19146.381440]  sysvec_hyperv_stimer0+0xaf/0xd0
+[19146.381457]  asm_sysvec_hyperv_stimer0+0x1f/0x30
+[19146.381474]  flush_smp_call_function_queue+0x48/0xb0
+[19146.381494]  do_idle+0x171/0x260
+[19146.381513]  cpu_startup_entry+0x31/0x40
+[19146.381532]  start_secondary+0x119/0x140
+[19146.381550]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19146.381711] value changed: 0x000000000000feef -> 0x000000000000eee9
+
+[19146.382226] Reported by Kernel Concurrency Sanitizer on:
+[19146.382483] CPU: 8 PID: 0 Comm: swapper/8 Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19147.712360] BUG: KCSAN: data-race in _find_next_bit+0x4f/0xd0
+
+[19147.712920] race at unknown origin, with read to 0xffff978c80071338 of 8 bytes by interrupt on cpu 0:
+[19147.713421]  _find_next_bit+0x4f/0xd0
+[19147.713441]  _nohz_idle_balance.isra.0+0x113/0x3b0
+[19147.713461]  run_rebalance_domains+0x7c/0x90
+[19147.713477]  handle_softirqs+0xf4/0x2e0
+[19147.713493]  __irq_exit_rcu+0x78/0xd0
+[19147.713509]  irq_exit_rcu+0x12/0x20
+[19147.713524]  sysvec_call_function_single+0xb4/0xd0
+[19147.713543]  asm_sysvec_call_function_single+0x1f/0x30
+[19147.713562]  pv_native_safe_halt+0xf/0x20
+[19147.713579]  arch_cpu_idle+0xd/0x20
+[19147.713598]  default_idle_call+0x34/0xf0
+[19147.713618]  do_idle+0x20f/0x260
+[19147.713637]  cpu_startup_entry+0x31/0x40
+[19147.713657]  rest_init+0x11e/0x120
+[19147.713680]  arch_call_rest_init+0x1b/0x50
+[19147.713702]  start_kernel+0x659/0x990
+[19147.713718]  x86_64_start_reservations+0x25/0x40
+[19147.713739]  __pfx_reserve_bios_regions+0x0/0x10
+[19147.713759]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19147.713959] value changed: 0x000000000000afff -> 0x000000000000efff
+
+[19147.714531] Reported by Kernel Concurrency Sanitizer on:
+[19147.714840] CPU: 0 PID: 0 Comm: swapper/0 Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19148.631082] BUG: KCSAN: data-race in get_cpu_sleep_time_us.part.0 / tick_nohz_idle_exit
+
+[19148.631720] read to 0xffff978d37924b40 of 1 bytes by task 22530 on cpu 12:
+[19148.632040]  get_cpu_sleep_time_us.part.0+0xb2/0x160
+[19148.632061]  get_cpu_idle_time_us+0x88/0xb0
+[19148.632079]  get_idle_time+0x73/0xa0
+[19148.632099]  uptime_proc_show+0xeb/0x250
+[19148.632125]  seq_read_iter+0x2bf/0x870
+[19148.632151]  proc_reg_read_iter+0x94/0x130
+[19148.632174]  vfs_read+0x349/0x570
+[19148.632195]  ksys_read+0xaa/0x140
+[19148.632249]  __x64_sys_read+0x4f/0x70
+[19148.632272]  x64_sys_call+0x19f9/0x2730
+[19148.632301]  do_syscall_64+0x5e/0x90
+[19148.632325]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[19148.632508] write to 0xffff978d37924b40 of 1 bytes by task 0 on cpu 4:
+[19148.632817]  tick_nohz_idle_exit+0x7a/0x180
+[19148.632838]  do_idle+0x160/0x260
+[19148.632858]  cpu_startup_entry+0x31/0x40
+[19148.632878]  start_secondary+0x119/0x140
+[19148.632896]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19148.633064] Reported by Kernel Concurrency Sanitizer on:
+[19148.633345] CPU: 4 PID: 0 Comm: swapper/4 Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19148.634288] BUG: KCSAN: data-race in get_cpu_sleep_time_us.part.0 / tick_nohz_idle_stop_tick
+
+[19148.634892] read to 0xffff978d37864b40 of 1 bytes by task 22530 on cpu 12:
+[19148.635238]  get_cpu_sleep_time_us.part.0+0xb2/0x160
+[19148.635259]  get_cpu_idle_time_us+0x88/0xb0
+[19148.635277]  get_idle_time+0x73/0xa0
+[19148.635297]  uptime_proc_show+0xeb/0x250
+[19148.635317]  seq_read_iter+0x2bf/0x870
+[19148.635334]  proc_reg_read_iter+0x94/0x130
+[19148.635349]  vfs_read+0x349/0x570
+[19148.635364]  ksys_read+0xaa/0x140
+[19148.635379]  __x64_sys_read+0x4f/0x70
+[19148.635395]  x64_sys_call+0x19f9/0x2730
+[19148.635416]  do_syscall_64+0x5e/0x90
+[19148.635434]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[19148.635617] write to 0xffff978d37864b40 of 1 bytes by task 0 on cpu 1:
+[19148.635962]  tick_nohz_idle_stop_tick+0x166/0x4b0
+[19148.635982]  do_idle+0x20a/0x260
+[19148.636001]  cpu_startup_entry+0x31/0x40
+[19148.636021]  start_secondary+0x119/0x140
+[19148.636040]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19148.636179] Reported by Kernel Concurrency Sanitizer on:
+[19148.636467] CPU: 1 PID: 0 Comm: swapper/1 Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19148.639530] BUG: KCSAN: data-race in get_cpu_sleep_time_us.part.0 / tick_nohz_idle_stop_tick
+
+[19148.640352] read to 0xffff978d378a4b40 of 1 bytes by task 22530 on cpu 12:
+[19148.640748]  get_cpu_sleep_time_us.part.0+0xb2/0x160
+[19148.640772]  get_cpu_idle_time_us+0x88/0xb0
+[19148.640790]  get_idle_time+0x73/0xa0
+[19148.640810]  uptime_proc_show+0xeb/0x250
+[19148.640830]  seq_read_iter+0x2bf/0x870
+[19148.640847]  proc_reg_read_iter+0x94/0x130
+[19148.640862]  vfs_read+0x349/0x570
+[19148.640877]  ksys_read+0xaa/0x140
+[19148.640892]  __x64_sys_read+0x4f/0x70
+[19148.640908]  x64_sys_call+0x19f9/0x2730
+[19148.640928]  do_syscall_64+0x5e/0x90
+[19148.640947]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[19148.641125] write to 0xffff978d378a4b40 of 1 bytes by task 0 on cpu 2:
+[19148.641525]  tick_nohz_idle_stop_tick+0x1ba/0x4b0
+[19148.641548]  do_idle+0x20a/0x260
+[19148.641568]  cpu_startup_entry+0x31/0x40
+[19148.641588]  start_secondary+0x119/0x140
+[19148.641606]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19148.641778] Reported by Kernel Concurrency Sanitizer on:
+[19148.642059] CPU: 2 PID: 0 Comm: swapper/2 Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19148.716339] BUG: KCSAN: data-race in tick_nohz_idle_stop_tick / tick_nohz_idle_stop_tick
+
+[19148.716934] write to 0xffffffffb5f50eb0 of 4 bytes by task 0 on cpu 12:
+[19148.717276]  tick_nohz_idle_stop_tick+0x3bd/0x4b0
+[19148.717296]  do_idle+0x20a/0x260
+[19148.717315]  cpu_startup_entry+0x31/0x40
+[19148.717335]  start_secondary+0x119/0x140
+[19148.717389]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19148.717523] read (reordered) to 0xffffffffb5f50eb0 of 4 bytes by task 0 on cpu 0:
+[19148.717965]  tick_nohz_idle_stop_tick+0x14a/0x4b0
+[19148.718010]  do_idle+0x20a/0x260
+[19148.718039]  cpu_startup_entry+0x31/0x40
+[19148.718066]  rest_init+0x11e/0x120
+[19148.718097]  arch_call_rest_init+0x1b/0x50
+[19148.718122]  start_kernel+0x659/0x990
+[19148.718145]  x86_64_start_reservations+0x25/0x40
+[19148.718172]  __pfx_reserve_bios_regions+0x0/0x10
+[19148.718200]  secondary_startup_64_no_verify+0x17d/0x18b
+[19148.718228]   |
+                 +-> reordered to: tick_nohz_idle_stop_tick+0x3fb/0x4b0
+
+[19148.718866] Reported by Kernel Concurrency Sanitizer on:
+[19148.719267] CPU: 0 PID: 0 Comm: swapper/0 Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19149.112380] BUG: KCSAN: data-race in tick_nohz_next_event / tick_sched_do_timer
+
+[19149.112960] write to 0xffffffffb5f50eb0 of 4 bytes by interrupt on cpu 0:
+[19149.113341]  tick_sched_do_timer+0x116/0x130
+[19149.113361]  tick_sched_timer+0x4d/0xd0
+[19149.113379]  __hrtimer_run_queues+0x26e/0x4c0
+[19149.113397]  hrtimer_interrupt+0x1eb/0x400
+[19149.113415]  hv_stimer0_isr+0x5c/0x70
+[19149.113434]  __sysvec_hyperv_stimer0+0x68/0xb0
+[19149.113455]  sysvec_hyperv_stimer0+0xaf/0xd0
+[19149.113472]  asm_sysvec_hyperv_stimer0+0x1f/0x30
+[19149.113490]  tick_nohz_idle_exit+0xb4/0x180
+[19149.113509]  do_idle+0x160/0x260
+[19149.113528]  cpu_startup_entry+0x31/0x40
+[19149.113548]  rest_init+0x11e/0x120
+[19149.113568]  arch_call_rest_init+0x1b/0x50
+[19149.113585]  start_kernel+0x659/0x990
+[19149.113600]  x86_64_start_reservations+0x25/0x40
+[19149.113620]  __pfx_reserve_bios_regions+0x0/0x10
+[19149.113640]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19149.113801] read to 0xffffffffb5f50eb0 of 4 bytes by task 0 on cpu 6:
+[19149.114142]  tick_nohz_next_event+0x11c/0x220
+[19149.114160]  tick_nohz_idle_stop_tick+0x2c5/0x4b0
+[19149.114180]  do_idle+0x20a/0x260
+[19149.114198]  cpu_startup_entry+0x31/0x40
+[19149.114227]  start_secondary+0x119/0x140
+[19149.114273]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19149.114430] Reported by Kernel Concurrency Sanitizer on:
+[19149.114686] CPU: 6 PID: 0 Comm: swapper/6 Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19151.016221] BUG: KCSAN: data-race in tick_nohz_idle_stop_tick / tick_nohz_next_event
+
+[19151.016728] write to 0xffffffffb5f50eb0 of 4 bytes by task 0 on cpu 2:
+[19151.017069]  tick_nohz_idle_stop_tick+0x3bd/0x4b0
+[19151.017089]  do_idle+0x20a/0x260
+[19151.017108]  cpu_startup_entry+0x31/0x40
+[19151.017127]  start_secondary+0x119/0x140
+[19151.017146]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19151.017277] read to 0xffffffffb5f50eb0 of 4 bytes by task 0 on cpu 1:
+[19151.017622]  tick_nohz_next_event+0x11c/0x220
+[19151.017667]  tick_nohz_idle_stop_tick+0x2c5/0x4b0
+[19151.017686]  do_idle+0x20a/0x260
+[19151.017705]  cpu_startup_entry+0x31/0x40
+[19151.017724]  start_secondary+0x119/0x140
+[19151.017742]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19151.017884] value changed: 0x00000002 -> 0xffffffff
+
+[19151.018289] Reported by Kernel Concurrency Sanitizer on:
+[19151.018520] CPU: 1 PID: 0 Comm: swapper/1 Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19151.937592] BUG: KCSAN: data-race in get_cpu_sleep_time_us.part.0 / tick_nohz_idle_exit
+
+[19151.938232] read to 0xffff978d379a4b40 of 1 bytes by task 22532 on cpu 14:
+[19151.938555]  get_cpu_sleep_time_us.part.0+0xb2/0x160
+[19151.938576]  get_cpu_idle_time_us+0x88/0xb0
+[19151.938594]  get_idle_time+0x73/0xa0
+[19151.938614]  uptime_proc_show+0xeb/0x250
+[19151.938634]  seq_read_iter+0x2bf/0x870
+[19151.938651]  proc_reg_read_iter+0x94/0x130
+[19151.938666]  vfs_read+0x349/0x570
+[19151.938681]  ksys_read+0xaa/0x140
+[19151.938696]  __x64_sys_read+0x4f/0x70
+[19151.938712]  x64_sys_call+0x19f9/0x2730
+[19151.938733]  do_syscall_64+0x5e/0x90
+[19151.938751]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[19151.938973] write to 0xffff978d379a4b40 of 1 bytes by task 0 on cpu 6:
+[19151.939304]  tick_nohz_idle_exit+0x7a/0x180
+[19151.939324]  do_idle+0x160/0x260
+[19151.939344]  cpu_startup_entry+0x31/0x40
+[19151.939364]  start_secondary+0x119/0x140
+[19151.939382]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19151.939532] Reported by Kernel Concurrency Sanitizer on:
+[19151.939825] CPU: 6 PID: 0 Comm: swapper/6 Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19151.947116] BUG: KCSAN: data-race in get_cpu_sleep_time_us.part.0 / tick_nohz_idle_enter
+
+[19151.947634] read to 0xffff978d37a64b40 of 1 bytes by task 22532 on cpu 14:
+[19151.947938]  get_cpu_sleep_time_us.part.0+0xb2/0x160
+[19151.947959]  get_cpu_idle_time_us+0x88/0xb0
+[19151.947977]  get_idle_time+0x73/0xa0
+[19151.947998]  uptime_proc_show+0xeb/0x250
+[19151.948017]  seq_read_iter+0x2bf/0x870
+[19151.948034]  proc_reg_read_iter+0x94/0x130
+[19151.948050]  vfs_read+0x349/0x570
+[19151.948065]  ksys_read+0xaa/0x140
+[19151.948080]  __x64_sys_read+0x4f/0x70
+[19151.948095]  x64_sys_call+0x19f9/0x2730
+[19151.948116]  do_syscall_64+0x5e/0x90
+[19151.948134]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[19151.948281] write to 0xffff978d37a64b40 of 1 bytes by task 0 on cpu 9:
+[19151.948713]  tick_nohz_idle_enter+0x6b/0x110
+[19151.948735]  do_idle+0x48/0x260
+[19151.948755]  cpu_startup_entry+0x31/0x40
+[19151.948775]  start_secondary+0x119/0x140
+[19151.948823]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19151.949000] Reported by Kernel Concurrency Sanitizer on:
+[19151.949224] CPU: 9 PID: 0 Comm: swapper/9 Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19153.076268] BUG: KCSAN: data-race in tick_nohz_next_event / tick_sched_do_timer
+
+[19153.076808] write to 0xffffffffb5f50eb0 of 4 bytes by interrupt on cpu 10:
+[19153.077150]  tick_sched_do_timer+0x116/0x130
+[19153.077172]  tick_sched_timer+0x4d/0xd0
+[19153.077190]  __hrtimer_run_queues+0x26e/0x4c0
+[19153.077208]  hrtimer_interrupt+0x1eb/0x400
+[19153.077226]  hv_stimer0_isr+0x5c/0x70
+[19153.077279]  __sysvec_hyperv_stimer0+0x68/0xb0
+[19153.077300]  sysvec_hyperv_stimer0+0xaf/0xd0
+[19153.077318]  asm_sysvec_hyperv_stimer0+0x1f/0x30
+[19153.077335]  ksys_read+0x63/0x140
+[19153.077351]  __x64_sys_read+0x4f/0x70
+[19153.077366]  x64_sys_call+0x19f9/0x2730
+[19153.077387]  do_syscall_64+0x5e/0x90
+[19153.077404]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[19153.077616] read to 0xffffffffb5f50eb0 of 4 bytes by task 0 on cpu 1:
+[19153.077951]  tick_nohz_next_event+0x11c/0x220
+[19153.077970]  tick_nohz_idle_stop_tick+0x2c5/0x4b0
+[19153.077989]  do_idle+0x20a/0x260
+[19153.078009]  cpu_startup_entry+0x31/0x40
+[19153.078028]  start_secondary+0x119/0x140
+[19153.078046]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19153.078219] value changed: 0xffffffff -> 0x0000000a
+
+[19153.078658] Reported by Kernel Concurrency Sanitizer on:
+[19153.078955] CPU: 1 PID: 0 Comm: swapper/1 Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19154.128215] BUG: KCSAN: data-race in _find_next_bit+0x4f/0xd0
+
+[19154.128732] race at unknown origin, with read to 0xffff978c80071338 of 8 bytes by interrupt on cpu 0:
+[19154.129144]  _find_next_bit+0x4f/0xd0
+[19154.129162]  _nohz_idle_balance.isra.0+0x1f9/0x3b0
+[19154.129180]  run_rebalance_domains+0x7c/0x90
+[19154.129196]  handle_softirqs+0xf4/0x2e0
+[19154.129213]  __irq_exit_rcu+0x78/0xd0
+[19154.129257]  irq_exit_rcu+0x12/0x20
+[19154.129272]  sysvec_call_function_single+0xb4/0xd0
+[19154.129291]  asm_sysvec_call_function_single+0x1f/0x30
+[19154.129309]  pv_native_safe_halt+0xf/0x20
+[19154.129326]  arch_cpu_idle+0xd/0x20
+[19154.129345]  default_idle_call+0x34/0xf0
+[19154.129365]  do_idle+0x20f/0x260
+[19154.129383]  cpu_startup_entry+0x31/0x40
+[19154.129403]  rest_init+0x11e/0x120
+[19154.129422]  arch_call_rest_init+0x1b/0x50
+[19154.129439]  start_kernel+0x659/0x990
+[19154.129454]  x86_64_start_reservations+0x25/0x40
+[19154.129474]  __pfx_reserve_bios_regions+0x0/0x10
+[19154.129494]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19154.129677] value changed: 0x000000000000fff7 -> 0x000000000000ffff
+
+[19154.130207] Reported by Kernel Concurrency Sanitizer on:
+[19154.130475] CPU: 0 PID: 0 Comm: swapper/0 Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19154.908485] BUG: KCSAN: data-race in tick_nohz_idle_stop_tick / tick_nohz_idle_stop_tick
+
+[19154.909010] write to 0xffffffffb5f50eb0 of 4 bytes by task 0 on cpu 12:
+[19154.909317]  tick_nohz_idle_stop_tick+0x3bd/0x4b0
+[19154.909337]  do_idle+0x20a/0x260
+[19154.909369]  cpu_startup_entry+0x31/0x40
+[19154.909388]  start_secondary+0x119/0x140
+[19154.909407]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19154.909574] read to 0xffffffffb5f50eb0 of 4 bytes by task 0 on cpu 7:
+[19154.909844]  tick_nohz_idle_stop_tick+0x14a/0x4b0
+[19154.909863]  do_idle+0x20a/0x260
+[19154.909882]  cpu_startup_entry+0x31/0x40
+[19154.909901]  start_secondary+0x119/0x140
+[19154.909918]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19154.910060] Reported by Kernel Concurrency Sanitizer on:
+[19154.910320] CPU: 7 PID: 0 Comm: swapper/7 Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19157.003259] BUG: KCSAN: data-race in get_cpu_sleep_time_us.part.0 / tick_nohz_idle_stop_tick
+
+[19157.003897] read to 0xffff978d37ba4b40 of 1 bytes by task 22536 on cpu 10:
+[19157.004237]  get_cpu_sleep_time_us.part.0+0xb2/0x160
+[19157.004257]  get_cpu_idle_time_us+0x88/0xb0
+[19157.004276]  get_idle_time+0x73/0xa0
+[19157.004296]  uptime_proc_show+0xeb/0x250
+[19157.004315]  seq_read_iter+0x2bf/0x870
+[19157.004332]  proc_reg_read_iter+0x94/0x130
+[19157.004347]  vfs_read+0x349/0x570
+[19157.004363]  ksys_read+0xaa/0x140
+[19157.004377]  __x64_sys_read+0x4f/0x70
+[19157.004393]  x64_sys_call+0x19f9/0x2730
+[19157.004414]  do_syscall_64+0x5e/0x90
+[19157.004432]  entry_SYSCALL_64_after_hwframe+0x78/0xe2
+
+[19157.004594] write to 0xffff978d37ba4b40 of 1 bytes by task 0 on cpu 14:
+[19157.004939]  tick_nohz_idle_stop_tick+0x166/0x4b0
+[19157.004960]  do_idle+0x20a/0x260
+[19157.004979]  cpu_startup_entry+0x31/0x40
+[19157.004999]  start_secondary+0x119/0x140
+[19157.005017]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19157.005184] Reported by Kernel Concurrency Sanitizer on:
+[19157.005464] CPU: 14 PID: 0 Comm: swapper/14 Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
+[19157.692272] BUG: KCSAN: data-race in _find_next_bit+0x4f/0xd0
+
+[19157.692769] race at unknown origin, with read to 0xffff978c80071338 of 8 bytes by interrupt on cpu 0:
+[19157.693219]  _find_next_bit+0x4f/0xd0
+[19157.693236]  _nohz_idle_balance.isra.0+0x1f9/0x3b0
+[19157.693255]  run_rebalance_domains+0x7c/0x90
+[19157.693271]  handle_softirqs+0xf4/0x2e0
+[19157.693287]  __irq_exit_rcu+0x78/0xd0
+[19157.693303]  irq_exit_rcu+0x12/0x20
+[19157.693318]  sysvec_call_function_single+0xb4/0xd0
+[19157.693336]  asm_sysvec_call_function_single+0x1f/0x30
+[19157.693355]  pv_native_safe_halt+0xf/0x20
+[19157.693372]  arch_cpu_idle+0xd/0x20
+[19157.693402]  default_idle_call+0x34/0xf0
+[19157.693422]  do_idle+0x20f/0x260
+[19157.693441]  cpu_startup_entry+0x31/0x40
+[19157.693460]  rest_init+0x11e/0x120
+[19157.693480]  arch_call_rest_init+0x1b/0x50
+[19157.693497]  start_kernel+0x659/0x990
+[19157.693512]  x86_64_start_reservations+0x25/0x40
+[19157.693532]  __pfx_reserve_bios_regions+0x0/0x10
+[19157.693552]  secondary_startup_64_no_verify+0x17d/0x18b
+
+[19157.693764] value changed: 0x000000000000effd -> 0x000000000000efff
+
+[19157.694277] Reported by Kernel Concurrency Sanitizer on:
+[19157.694536] CPU: 0 PID: 0 Comm: swapper/0 Tainted: G           O       6.6.87.1-microsoft-standard-WSL2-kqkcsan #2
