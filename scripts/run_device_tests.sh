@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Full device test cycle (needs sudo for insmod/rmmod; asks once):
-#   1. default capacity, both wake-up modes: functional tests + stress suite
+#   1. default capacity, both wake-up modes: functional tests + stress suite;
+#      plus the kqctl smoke test and (x86-64) the 32-bit compat ioctl test
 #   2. minimum capacity (4096): functional tests + two stress runs
 #   3. maximum capacity (16 MiB): functional tests
 #   4. out-of-range capacity values must be rejected by insmod
@@ -44,6 +45,10 @@ scripts/env_info.sh > "$logdir/environment.txt"
 step "default capacity, exclusive wake-ups (default)"
 scripts/load_module.sh || exit 1
 check functional-default build/test_functional
+check kqctl scripts/test_kqctl.sh build/kqctl
+if [ "$(uname -m)" = x86_64 ]; then
+	check compat32 build/test_compat32
+fi
 check stress-default scripts/run_stress.sh build/test_stress
 scripts/unload_module.sh
 

@@ -71,6 +71,7 @@ Design rationale and the locking argument: [docs/design.md](docs/design.md).
 ```bash
 make              # user-space programs into build/ (strict warnings, -Werror)
 make module       # build/kernqueue.ko (KDIR=... to override the kernel tree)
+make sparse       # same, with the sparse static checker on the driver
 ```
 
 Kbuild can't handle spaces in paths. If the repository path contains spaces,

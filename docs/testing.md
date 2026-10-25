@@ -82,6 +82,25 @@ setarch "$(uname -m)" -R build/tsan/test_stress -d /path/to/fifo   # TSan on WSL
 `setarch -R` is needed because WSL's mmap randomisation breaks TSan's shadow
 memory layout ("unexpected memory mapping").
 
+### sparse (used)
+```bash
+make sparse        # Kbuild C=2: runs sparse on every driver source file
+```
+sparse understands the kernel's `__user` / `__iomem` address-space
+annotations and lock-context annotations. The driver is sparse-clean. To show
+the check is live, a mutant that replaced one `copy_to_user()` with
+`memcpy()` into the `__user` buffer was flagged ("incorrect type in argument
+1 (different address spaces)"). On WSL, sparse 0.6.4 was installed
+user-locally from the Ubuntu archive (SHA-256 checked against apt's index)
+into `~/kq-kbuild/tools`; `build_module.sh` falls back to that location.
+
+### 32-bit compat path (used)
+`build/test_compat32` is a freestanding i386 binary (`-m32 -nostdlib`, raw
+`int $0x80` system calls, because no 32-bit libc is installed). It opens the
+device, writes, reads, and issues `GET_STATS`, unknown and bad-pointer ioctls
+through `compat_sys_ioctl()` → `compat_ptr_ioctl()`. It's part of the device
+cycle on x86-64 hosts.
+
 ### Kernel sanitizers: lockdep, KASAN, KCSAN, DEBUG_ATOMIC_SLEEP (not run)
 None of these are enabled in the stock WSL kernel (checked in
 `/proc/config.gz`). They are the most valuable next step:

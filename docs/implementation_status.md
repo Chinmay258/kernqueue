@@ -39,10 +39,10 @@ See `scripts/prepare_wsl_kdir.sh`.
 | signals (`-ERESTARTSYS` → EINTR / SA_RESTART) | yes | run 1: `signal_interrupts_read`, `signal_restarts_read` |
 | `poll` readiness and wake-ups | yes | run 1: `poll_states`, `poll_wakeups`; non-blocking stress runs |
 | ioctls GET_STATS / RESET / CLEAR_STATS, ENOTTY, EBADF, EFAULT | yes | run 1: `ioctl_invalid`, `reset_*` |
-| 32-bit compat ioctl (`compat_ptr_ioctl`) | yes | **not tested** (no 32-bit userland) |
+| 32-bit compat ioctl (`compat_ptr_ioctl`) | yes | `test_compat32` (freestanding i386) written and built; **device run pending** |
 | non-seekable stream (`ESPIPE`) | yes | run 1: `not_seekable` |
 | exclusive, need-aware wake-ups with hand-off (v2) | yes | run 2: 3 targeted tests (`wake_*`) pass; stress in both modes; 16×1 4.84 s vs 29.04 s |
-| `kqctl` client | yes | built; not covered by an automated test |
+| `kqctl` client | yes | `scripts/test_kqctl.sh` (13 checks) written; **device run pending** |
 | benchmark with latency percentiles | yes | run 2: 81 runs (9 configs × 3 reps × 3 targets), see benchmark_results.md |
 
 ## Checks executed
@@ -62,6 +62,9 @@ See `scripts/prepare_wsl_kdir.sh`.
 | 11 | Kernel tree build; `kernelrelease` equals `uname -r`; `Module.symvers` produced | **PASS** (after fixes, below) |
 | 12 | `make module`: vermagic equals the running kernel | **PASS** |
 | 13 | Imported-symbol CRCs vs. modules shipped with the running kernel | v1 **36/36**, v2 **39/39** match |
+| 14 | `sparse` 0.6.4 over the driver (`make sparse`, Kbuild `C=2`) | **clean** (0 warnings) |
+| 15 | sparse mutation check: `copy_to_user()` → `memcpy()` into a `__user` buffer | **detected** ("different address spaces") |
+| 16 | `test_compat32` builds as an i386 binary; without the module it fails at check 1 (no false pass) | **as expected** |
 
 ### Device run 1: v1 driver (logs: [evidence/run1-v1](evidence/run1-v1/))
 
@@ -143,8 +146,8 @@ A/B), with no lost, duplicated, reordered, corrupted or split record.
 * Kernel sanitizers (lockdep, `DEBUG_ATOMIC_SLEEP`, KASAN, KCSAN): not
   available in the stock WSL kernel. They need a custom debug kernel; see
   testing.md.
-* `sparse` (`make C=1`) for `__user` annotation checking: not installed.
-* 32-bit compat ioctl path: not tested.
+* `test_compat32` and `test_kqctl.sh` on the device: part of
+  `scripts/run_device_tests.sh`, not yet run (the cycle needs sudo).
 * The "woken, then interrupted by a signal" hand-off path in v2 is reasoned
   about (design.md) but has no deterministic test.
 * Other kernel versions, architectures and native (non-VM) hardware.

@@ -2,6 +2,7 @@
 #
 #   make                 build the user-space programs into build/
 #   make module          build driver/kernqueue.ko (needs KDIR, see README)
+#   make sparse          same, with the sparse static checker (C=2)
 #   make test-unit       ring-logic unit test (no driver needed)
 #   make test-harness    stress harness self-test against a FIFO (no driver)
 #   make test            functional tests against the loaded driver
@@ -34,9 +35,19 @@ ALL_CFLAGS := -std=c11 $(WARN) $(CFLAGS)
 
 PROGS := $(BUILD)/kqctl $(BUILD)/test_ring $(BUILD)/test_functional \
          $(BUILD)/test_stress $(BUILD)/kq_bench
+ifeq ($(shell uname -m),x86_64)
+PROGS += $(BUILD)/test_compat32
+endif
 
-.PHONY: all user module test-unit test-harness test stress bench sanitize \
-        check-device clean
+# 32-bit, libc-free test of the compat ioctl path (tests/test_compat32.c).
+# The 64-bit multiarch include directory supplies <asm/*.h>; those headers
+# pick their 32-bit definitions themselves under -m32.
+COMPAT32_FLAGS := -m32 -ffreestanding -nostdlib -static -fno-pic \
+                  -fno-stack-protector -fno-asynchronous-unwind-tables -O2 \
+                  -Iinclude -I/usr/include/$(shell $(CC) -print-multiarch)
+
+.PHONY: all user module sparse test-unit test-harness test stress bench \
+        sanitize check-device clean
 
 all: user
 user: $(PROGS)
@@ -70,8 +81,16 @@ $(BUILD)/test_stress: $(BUILD)/test_stress.o $(BUILD)/kq_common.o
 $(BUILD)/kq_bench: $(BUILD)/kq_bench.o $(BUILD)/kq_common.o
 	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
 
+$(BUILD)/test_compat32: tests/test_compat32.c include/kernqueue.h | $(BUILD)
+	$(CC) -std=c11 $(WARN) $(COMPAT32_FLAGS) $< -o $@
+
 module:
 	scripts/build_module.sh
+
+# Build the module with sparse checking every source file (__user pointers,
+# address spaces, lock contexts).
+sparse:
+	KQ_SPARSE=1 scripts/build_module.sh
 
 test-unit: $(BUILD)/test_ring
 	$(BUILD)/test_ring

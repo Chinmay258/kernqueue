@@ -134,8 +134,14 @@ the notes. Each answer is backed by a specific line of code or a test.
     monotonicity, an atomic seen-bitmap, a final sweep, and cross-checks
     against the driver's counters.
 29. **What would you run next to increase confidence?** A lockdep +
-    `DEBUG_ATOMIC_SLEEP` kernel, KASAN, KCSAN, `sparse` (`make C=1`) for
-    `__user` misuse, longer soaks, and other kernel versions/architectures.
+    `DEBUG_ATOMIC_SLEEP` kernel, KASAN, KCSAN, longer soaks, and other kernel
+    versions/architectures. sparse is already clean, and a planted `__user`
+    misuse was caught.
+29b. **How did you test the 32-bit compat path without a 32-bit libc?** With a
+    freestanding `-m32 -nostdlib` program that makes raw `int $0x80` syscalls,
+    so its `ioctl()` goes through `compat_sys_ioctl()` → `compat_ptr_ioctl()`.
+    It works because `struct kq_stats` is all `__u64` (96 bytes in both ABIs),
+    so the command number is the same and only the pointer needs converting.
 30. **Why did you build a whole kernel just to compile one module?** No WSL
     headers exist, and modversions needs `Module.symvers` CRCs. The config must
     match exactly (e.g. BTF changes `struct module`). The script refuses to

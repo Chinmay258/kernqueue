@@ -36,9 +36,18 @@ if [[ "$root" =~ [[:space:]] ]]; then
 	cp -r "$root/driver" "$root/include" "$src/"
 fi
 
-echo ">> building against $KDIR with CC=$cc (W=1 extra warnings)"
+# KQ_SPARSE=1 runs sparse on every source file (C=2). A user-local sparse
+# under ~/kq-kbuild/tools is used if none is installed system-wide.
+check=()
+if [ -n "${KQ_SPARSE:-}" ]; then
+	command -v sparse >/dev/null || PATH="${KQ_KBUILD_DIR:-$HOME/kq-kbuild}/tools/root/usr/bin:$PATH"
+	command -v sparse >/dev/null || { echo "error: sparse not found (apt install sparse)" >&2; exit 1; }
+	check=(C=2)
+fi
+
+echo ">> building against $KDIR with CC=$cc (W=1 extra warnings${check:+, sparse})"
 # LOCALVERSION= matches how prepare_wsl_kdir.sh built the tree (no "+").
-make -C "$KDIR" M="$src/driver" CC="$cc" LOCALVERSION= W=1 modules
+make -C "$KDIR" M="$src/driver" CC="$cc" LOCALVERSION= W=1 "${check[@]}" modules
 
 # Module BTF is "split" BTF: type IDs and string offsets continue from the
 # vmlinux BTF it was generated against. Kbuild used this tree's vmlinux,
