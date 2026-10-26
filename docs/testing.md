@@ -12,10 +12,11 @@ marked **(used)**; the rest are recommendations.
 | Ring unit test | `make test-unit` | no | `kq_ring.h` index arithmetic matches a reference model over ~1.8M random operations and 9 capacities; boundary cases; overflow edge at `SIZE_MAX/2`. |
 | Harness self-test | `make test-harness` | no | `test_stress` passes on a correct queue (a named pipe), and detects injected duplicates, losses, corruption and split records. Validates the *checker*, not the driver. |
 | Sanitizers | `make sanitize` | no | The two layers above under ASan + UBSan. |
-| Functional | `make test` | yes | 27 single-purpose tests of the read/write/poll/ioctl contract, including blocking, signals, partial faults, bad pointers, and three tests that hang if exclusive wake-ups lose a wake-up. Exact expected values. |
+| Functional | `make test` | yes | 33 single-purpose tests of the read/write/poll/ioctl contract. They include blocking, signals, `SIGKILL` while blocked, partial faults, bad pointers, the exact `POLLOUT` threshold, `RESET` against blocked readers, pollers and live I/O, and three tests that hang if exclusive wake-ups lose a wake-up. Exact expected values. |
 | Stress | `make stress` | yes | MPMC integrity under contention: 7 configurations (1–16 writers × 1–16 readers, 32–4096-byte records, blocking and poll-driven). |
 | Device cycle | `make check-device` (or `scripts/run_device_tests.sh --bench`) | loads it | Functional + stress in both wake-up modes, the `kqctl` smoke test and the 32-bit compat test, functional at min/max capacity, parameter rejection, optional benchmark, and a kernel-log scan for warnings, errors, BTF mismatches and lockdep reports. Needs sudo (asks once). |
-| Wake-mode A/B | `scripts/ab_wake.sh [cap] [W] [R] [size] [reps]` | loads it | Interleaved same-session comparison of `exclusive_wake=1` vs `0` for one workload (integrity run + benchmark per step). |
+| Wake mutation check | `scripts/wake_mutant_check.sh` | loads it | The three exclusive-wake tests can fail. Three one-line mutants (writer need filter removed; reader hand-off removed; writer hand-off removed) must each make their targeted test fail 3/3, and the unmodified driver must pass. Doesn't scan the kernel log. Needs sudo. |
+| Wake-mode A/B | `scripts/ab_wake.sh [cap] [W] [R] [size] [reps]` | loads it | Interleaved same-session comparison of `exclusive_wake=1` vs `0` for one workload (integrity run + benchmark per step). Doesn't scan the kernel log. |
 | Benchmark | `make bench` | yes | Throughput and latency percentiles vs a FIFO baseline. Not a correctness test. |
 
 All test programs exit nonzero on failure, and the device targets fail when

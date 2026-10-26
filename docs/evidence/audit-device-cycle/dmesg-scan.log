@@ -1,0 +1,17 @@
+[  418.442792] kernqueue-test-cycle-1793044412
+[  431.558028] kernqueue: ready: /dev/kernqueue (240:0), capacity 65536 bytes
+[  450.707228] kernqueue: unloaded
+[  450.808319] kernqueue: ready: /dev/kernqueue (240:0), capacity 65536 bytes
+[  479.844697] kernqueue: unloaded
+[  479.961096] kernqueue: ready: /dev/kernqueue (240:0), capacity 4096 bytes
+[  494.583881] kernqueue: unloaded
+[  494.690130] kernqueue: ready: /dev/kernqueue (240:0), capacity 16777216 bytes
+[  496.813016] kernqueue: unloaded
+[  496.896314] kernqueue: capacity=100 is outside [4096, 16777216]
+[  496.980465] kernqueue: capacity=4095 is outside [4096, 16777216]
+[  497.048008] kernqueue: capacity=16777217 is outside [4096, 16777216]
+[  497.141370] kernqueue: ready: /dev/kernqueue (240:0), capacity 65536 bytes
+[  833.556398] kernqueue: unloaded
+[  833.687857] kernqueue: ready: /dev/kernqueue (240:0), capacity 65536 bytes
+[  873.633377] systemd-journald[43]: Time jumped backwards, rotating.
+[  995.007115] kernqueue: unloaded

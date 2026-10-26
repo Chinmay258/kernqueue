@@ -2,7 +2,7 @@
 
 The truthful record of what exists, what was run, and what passed. "Verified"
 means a test or tool was actually run on the environment below and passed.
-Last updated: 2026-10-25.
+Last updated: 2026-10-27 (final audit; see [FINAL_AUDIT.md](FINAL_AUDIT.md)).
 
 ## Environment
 
@@ -70,6 +70,8 @@ See `scripts/prepare_wsl_kdir.sh`.
 | 19 | Device cycle under a strict-KCSAN kernel (2 boots) | **PASS**; 0 of 351 printed KCSAN reports had a racing access in kernqueue |
 | 20 | KCSAN mutation check: ring.count markings removed | **15 races in kernqueue reported**; stress still passed |
 | 21 | `data_race` self-test (kthreads racing on a module static) under KCSAN | **not reported** in 2 attempts; unexplained, see above |
+| 22 | Final audit, fresh clone: user build, module build, sparse, checkpatch, `test_ring`, harness, ASan/UBSan, `git status` clean, `make clean` complete | **PASS** (FINAL_AUDIT.md §1) |
+| 23 | Wake-logic mutation check: 3 mutants, each targeted test must fail 3/3 | **3/3 mutants detected** (audit) |
 
 ### Device run 1: v1 driver (logs: [evidence/run1-v1](evidence/run1-v1/))
 
@@ -265,14 +267,43 @@ After the mutation check, WSL stopped responding on the KCSAN kernel
 filesystem. WSL was shut down, `.wslconfig` removed, the stock kernel booted,
 and `build/kernqueue.ko` rebuilt for it (vermagic and CRCs re-verified).
 
+### Final audit device run (logs: [evidence/audit-device-cycle](evidence/audit-device-cycle/), [evidence/audit-wake-mutant](evidence/audit-wake-mutant/), [evidence/audit-ab-min-capacity](evidence/audit-ab-min-capacity/))
+
+Run on 2026-10-26 on the stock kernel. The driver source is unchanged since
+run 2. The functional suite now has 33 tests: 6 were added by the audit (see
+[FINAL_AUDIT.md](FINAL_AUDIT.md) §3).
+
+| Step | Result |
+|---|---|
+| functional, 4 configurations (default, wake-all, 4 KiB, 16 MiB) | **4 × 33/33 PASS** |
+| `scripts/test_kqctl.sh`; `test_compat32` | **13/13**; **PASS** |
+| stress: both wake modes (7 + 7) and minimum capacity (2) | **16/16 PASS** |
+| invalid `capacity` values rejected | **3/3** |
+| benchmark: both modes + FIFO, 9 configurations × 3 reps | completed: `bench/results/20261026-200144/` |
+| kernel log scan (device-cycle phase) | **clean** |
+| `scripts/wake_mutant_check.sh` (new) | **PASS**: control passes; mutants M1 (need filter), M2 (reader hand-off) and M3 (writer hand-off) each make their targeted test fail **3/3** |
+| `scripts/ab_wake.sh 4096 4 4 4096 3` | **6/6 stress PASS**. Exclusive mode was again slower: 85.5 vs 441.8 MB/s, 6.28–8.27 s vs 3.28–3.42 s |
+
+The 16×1 herd fix replicated in the stress suite: 5.05 s vs 21.79 s, with
+writer sleeps 168,235 vs 901,511. The benchmark's 16×1 and 1×16
+*throughput* gains **did not replicate** (1.05× and 0.86×; see
+benchmark_results.md). The kernel log during the mutant and A/B phases was
+not captured.
+
 ### Totals
 
-Across stock runs 1–3, the two KASAN debug runs and the two KCSAN runs:
-**720 functional test executions** and **105 stress runs**, all passing, plus
-the 6 A/B stress runs. **46.06 million records** were integrity-checked
-(13.68M under lockdep + KASAN, 13.68M under strict KCSAN), with no lost,
-duplicated, reordered, corrupted or split record. The mutation check's 3
-runs on the deliberately broken driver are not counted.
+Across stock runs 1–3, the two KASAN debug runs and the two KCSAN runs
+(historical), plus the audit run:
+- **852 functional test executions** (720 historical, 132 in the audit)
+- **121 stress runs**, all passing, plus **12 A/B stress runs** (6 historical,
+  6 audit)
+
+**54.10 million records** were integrity-checked: 46.06M historical and
+8.04M in the audit. Of these, 13.68M ran under lockdep + KASAN and 13.68M
+under strict KCSAN (both historical). No record
+was lost, duplicated, reordered, corrupted or split. Runs on deliberately
+broken drivers (the KCSAN mutant's 3 stress runs and the wake mutants) are
+not counted.
 
 ### Problems found and fixed
 
@@ -298,4 +329,6 @@ runs on the deliberately broken driver are not counted.
   lockdep coverage comes from the KASAN kernel only.
 * The "woken, then interrupted by a signal" hand-off path in v2 is reasoned
   about (design.md) but has no deterministic test.
+* The 6 tests added by the final audit have run only on the stock kernel,
+  not under the lockdep/KASAN or KCSAN kernels.
 * Other kernel versions, architectures and native (non-VM) hardware.

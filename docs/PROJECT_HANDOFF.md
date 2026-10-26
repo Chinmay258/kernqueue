@@ -7,7 +7,19 @@ test logs (`docs/evidence/`, `bench/results/`) and Git history. The
 unprivileged checks were also re-run on 2026-10-25; §8 says which results came
 from that re-run.
 
-**Evidence conventions.** Line numbers refer to commit `5ec6551`.
+**Updated 2026-10-27 after the final engineering audit**
+([FINAL_AUDIT.md](FINAL_AUDIT.md)), which:
+- found no driver defect and changed no driver code
+- added 6 functional tests (27 → 33) and `scripts/wake_mutant_check.sh`
+- re-ran the full device cycle, the benchmark matrix and the min-capacity A/B
+  on 2026-10-26
+- found that the "2.7× throughput" claim **does not reproduce** (§9)
+
+Results from that run are marked **[AUDIT]**.
+
+**Evidence conventions.** Driver line numbers refer to commit `5ec6551`; the
+driver is unchanged since then. `tests/test_functional.c` line numbers refer
+to the post-audit file.
 - **VERIFIED:** backed by a committed log or by today's re-run.
 - **UNVERIFIED:** no evidence exists; it's labelled as such where it appears.
 - **HYPOTHESIS:** an explanation that fits the data but wasn't proven.
@@ -151,7 +163,7 @@ Tracked files (`git ls-files`, commit `5ec6551`). Generated output lives in
 │   └── kqctl.c               CLI client: stats | write | read | dump | reset | clear-stats | poll
 ├── tests/
 │   ├── kq_test.{c,h}         fork-per-test runner with parent-side timeouts
-│   ├── test_functional.c     27 functional tests of the device contract
+│   ├── test_functional.c     33 functional tests of the device contract
 │   ├── test_stress.c         MPMC integrity stress test (+ --inject fault modes for self-testing)
 │   ├── test_ring.c           unit test of driver/kq_ring.h against a reference model
 │   ├── test_compat32.c       freestanding i386 program testing the 32-bit compat ioctl path
@@ -173,6 +185,7 @@ Tracked files (`git ls-files`, commit `5ec6551`). Generated output lives in
 │   ├── run_stress.sh         7-configuration stress suite (KQ_SOAK_SECONDS adds a soak run)
 │   ├── run_debug_checks.sh   device cycle under a debug kernel + checker self-tests
 │   ├── kcsan_mutant_check.sh KCSAN mutation check on a de-marked copy of kernqueue
+│   ├── wake_mutant_check.sh  3 wake-logic mutants; each targeted test must fail 3/3
 │   ├── kcsan_attribute.py    attribute KCSAN reports by the racing-access functions
 │   ├── test_harness_fifo.sh  self-test of test_stress against a named pipe, with fault injection
 │   ├── test_kqctl.sh         13-check smoke test of kqctl
@@ -186,14 +199,23 @@ Tracked files (`git ls-files`, commit `5ec6551`). Generated output lives in
     ├── benchmark_results.md  methodology, results, analysis
     ├── interview_prep.md     question bank + résumé text
     ├── evidence/             raw logs from every device run (see §8)
+    ├── FINAL_AUDIT.md        final engineering audit: findings, reruns, claims
     ├── PROJECT_HANDOFF.md    this file
     └── PROJECT_STATUS.md     short operational status
 ```
 
-`docs/evidence/` holds `run1-v1`, `run2-v2` and `run3-v2` (stock kernel),
-`debug-run1-selftest-order` and `debug-run2` (KASAN kernel), `kcsan-run1`,
-`kcsan-run2` and `kcsan-mutant` (KCSAN kernel), and `ab-min-capacity`. These
-logs contain absolute paths from the development machine.
+`docs/evidence/` holds:
+- `run1-v1`, `run2-v2` and `run3-v2` (stock kernel)
+- `debug-run1-selftest-order` and `debug-run2` (KASAN kernel)
+- `kcsan-run1`, `kcsan-run2` and `kcsan-mutant` (KCSAN kernel)
+- `ab-min-capacity`
+- [AUDIT]: `audit-device-cycle`, `audit-wake-mutant`,
+  `audit-ab-min-capacity` and `audit-device-run.log` (stock kernel)
+
+`bench/results/` holds the historical matrix `20261025-010601` and the audit
+rerun `20261026-200144`. The audit replaced machine-specific paths in the
+logs with `<repo>`, `<home>` and `<group>`; Git history still contains the
+originals.
 
 ---
 
@@ -400,7 +422,18 @@ padding, 96 bytes in both ABIs:
   failure, and "no test matched" is a failure.
 
 ### 5.6 Functional tests (`tests/test_functional.c`)
-There are 27 tests (table at `:989–1015`). Each test calls `fresh()`, which
+There are 33 tests (table at `:1225–1258`). The last six were added by the
+audit:
+- `reset_keeps_reader_blocked`
+- `reset_wakes_poll_writer`
+- `poll_out_threshold`
+- `killed_blocked_reader` and `killed_blocked_writer` (`SIGKILL` while
+  blocked; checks that `open_files` drops and the queue still serves new
+  waiters)
+- `reset_under_load` (4 writers, 4 readers and a 1 ms `RESET` loop for 1 s;
+  every surviving record must verify)
+
+Each test calls `fresh()`, which
 resets the device and clears its counters, then checks *exact* expected
 values. Blocking tests synchronise on the driver's `read_waits`/`write_waits`
 counters (`WAIT_STAT_GE`) rather than sleeps. Partial-fault tests use
@@ -460,6 +493,10 @@ fault. Other architectures accept a range (`#if defined(__x86_64__)`).
   - a generic regex for WARNING/BUG/Oops/error/invalid/mismatch/lockdep
 - **`prepare_debug_kdir.sh [kasan|kcsan]`**, **`run_debug_checks.sh`**,
   **`kcsan_mutant_check.sh`**: see §8.
+- **`wake_mutant_check.sh`** (audit): builds a control and 3 mutants of the
+  exclusive-wake logic, loads each with `exclusive_wake=1`, and requires the
+  targeted test to fail 3/3 while the control passes. It doesn't scan the
+  kernel log.
 
 ### 5.10 Discrepancies with the original specification
 The original request is the one in the project's first instructions.
@@ -539,14 +576,17 @@ lockdep.
 2. **The uncontended path pays an extra wake call.** In exclusive mode every
    read and write also makes a hand-off wake call: a wait-queue spinlock round
    trip even with no sleepers. This is the probable cause of the measured
-   8–11% single-producer slowdown (§9). PLAUSIBLE, not profiled.
+   1–11% single-producer slowdown (§9). PLAUSIBLE, not profiled.
 3. **One path is reasoned about but not tested.** "Woken exclusively, then
    interrupted before taking the mutex" is handled by the hand-off at
    `:326–330` and `:371–376`, but no deterministic test covers it.
 4. **The synthetic KCSAN `data_race` self-test doesn't trigger** (see §10).
    This is a validation-tool issue, not a kernqueue defect.
 
-No confirmed correctness defect in the driver was found.
+No confirmed correctness defect in the driver was found. The final audit
+reviewed the driver independently and reached the same conclusion. Its
+findings F1–F12 (severity, status) are in `FINAL_AUDIT.md` §2.5. Items 1 and
+3 above are its F3 and F9.
 
 ---
 
@@ -575,10 +615,11 @@ Device commands, executed with a human typing the sudo password:
 ```bash
 scripts/load_module.sh [capacity=N] [exclusive_wake=0|1]   # insmod + node group-rw
 build/kqctl stats ; build/kqctl write "hello" ; build/kqctl read 100
-build/test_functional                       # 27 tests
+build/test_functional                       # 33 tests
 scripts/run_stress.sh build/test_stress     # 7 configurations
 scripts/unload_module.sh                    # rmmod
 bash scripts/run_device_tests.sh [--bench]  # full cycle, one sudo prompt
+bash scripts/wake_mutant_check.sh           # wake-logic mutation check (audit)
 bash scripts/ab_wake.sh 4096 4 4 4096 3     # wake-mode A/B
 ```
 
@@ -630,31 +671,36 @@ failures. "Not run" means there is no evidence.
 | 7 | checkpatch | kernel style | `checkpatch.pl --no-tree -f` | 0/0 | driver, ring, uapi 0/0; `kq_debugcheck.c` 1 warning (intentional `volatile`) | **PASS** (re-run) | console |
 | 8 | sparse | `__user`/address-space misuse | `make sparse` | no warnings | none; a planted `memcpy` into a `__user` buffer was flagged | **PASS** (re-run; mutant once) | console |
 | 9 | Module CRC check | module ABI matches the running kernel | `modprobe --dump-modversions` vs shipped modules | all match | 39/39 (one via `sctp.ko`) | **PASS** | console (not committed) |
-| 10 | Functional suite (27) | open modes, counters, zero-length, non-blocking, fcntl toggle, fill, atomic writes, wraparound stream, blocking read/write, signals (EINTR, SA_RESTART), poll states and wake-ups, ESPIPE, bad pointers incl. a kernel address, partial read fault (contiguous and wrapped), atomic write fault, large partial write, ioctl errors (ENOTTY ×4, EFAULT ×4, EBADF), reset/clear, reset wakes writer, 3 exclusive-wake hand-off tests, shared/persistent queue | `build/test_functional` at 4 configs per cycle | all pass | 24/24 ×3 (run 1, v1, 24 tests); 27/27 ×4 in runs 2, 3, debug 1–2, KCSAN 1–2 | **PASS** (720 executions) | `docs/evidence/*/functional-*.log` |
+| 10 | Functional suite (27, 33 since the audit) | open modes, counters, zero-length, non-blocking, fcntl toggle, fill, atomic writes, wraparound stream, blocking read/write, signals (EINTR, SA_RESTART), poll states and wake-ups, ESPIPE, bad pointers incl. a kernel address, partial read fault (contiguous and wrapped), atomic write fault, large partial write, ioctl errors (ENOTTY ×4, EFAULT ×4, EBADF), reset/clear, reset wakes writer, 3 exclusive-wake hand-off tests, shared/persistent queue | `build/test_functional` at 4 configs per cycle | all pass | 24/24 ×3 (run 1, v1, 24 tests); 27/27 ×4 in runs 2, 3, debug 1–2, KCSAN 1–2; **[AUDIT] 33/33 ×4** (stock kernel only) | **PASS** (720 historical + 132 audit executions) | `docs/evidence/*/functional-*.log` |
 | 11 | Stress suite (7 configs) | MPMC integrity: 1×1, 4×4, 8×8, 16×1@4 KiB, 1×16@32 B, 4×4 and 8×8 non-blocking | `scripts/run_stress.sh` (both wake modes) | all pass | 7/7 per suite per mode | **PASS** | `stress-default.log`, `stress-wakeall.log` |
 | 12 | Min-capacity stress | integrity when the ring holds one 4 KiB record | 2 runs per cycle | pass | 2/2 per cycle | **PASS** | `stress-min*.log` |
 | 13 | Parameter validation | out-of-range `capacity` rejected | `insmod capacity=100/4095/16777217` | rejected | 3/3 every cycle | **PASS** | `device-cycle.log`, dmesg |
 | 14 | Kernel-log scan | no warnings or oopses during the cycle | `run_device_tests.sh` | clean | clean in all runs; run 1 contained "BTF mismatch", which the then-scan didn't match (fixed in run 2) | **PASS** (run 1 caveat) | `dmesg*.log` |
-| 15 | kqctl smoke test | CLI behaviour (13 checks) | `scripts/test_kqctl.sh` | 13/13 | 13/13 (run 3, debug 1–2, KCSAN 1–2) | **PASS** | `kqctl.log` |
+| 15 | kqctl smoke test | CLI behaviour (13 checks) | `scripts/test_kqctl.sh` | 13/13 | 13/13 (run 3, debug 1–2, KCSAN 1–2, audit) | **PASS** | `kqctl.log` |
 | 16 | 32-bit compat | ioctl/read/write via `compat_sys_ioctl` → `compat_ptr_ioctl` (13 checks) | `build/test_compat32` | PASS | PASS (same runs as #15) | **PASS** | `compat32.log` |
 | 17 | lockdep/KASAN cycle | full cycle under the debug kernel | `run_debug_checks.sh` on `-kqdebug` | no reports, `debug_locks=1` | clean both boots; `&kq.lock`, `&kq.readq`, `&kq.writeq` tracked | **PASS** | `debug-run1-*`, `debug-run2` |
 | 18 | Checker self-tests (KASAN kernel) | checkers are live | `kq_debugcheck.ko bug=...` | 3 reports | run 1: `lock_order` **not reported** (lockdep had turned itself off after `atomic_sleep`'s "Invalid wait context"); run 2 (order fixed): 3/3 | **PASS** (run 2) / FAIL (run 1, cause found) | `selftest-*.log` |
 | 19 | KCSAN cycle | no data races attributed to kernqueue | `run_debug_checks.sh` on `-kqkcsan` | 0 attributed | run 1: verdict **FAIL** under the first, coarse rule (125 reports had kernqueue on a stack; 0 racing accesses in kernqueue on replay); run 2: **PASS**, 168 reports, 0 attributed | **PASS** (run 2) | `kcsan-run1`, `kcsan-run2` (`dmesg-kcsan-attribution.txt`) |
 | 20 | KCSAN mutation check | KCSAN can see kernqueue's accesses | `scripts/kcsan_mutant_check.sh` | ≥ 1 attributed race | 15 races in `kq_poll`/`kq_read`/`kq_write`; mutant stress 3/3 still passed | **PASS** | `docs/evidence/kcsan-mutant/` |
 | 21 | KCSAN `data_race` self-test | synthetic kthread race is reported | `kq_debugcheck.ko bug=data_race` | report | not reported in 2 attempts (unbound 0.5 s; pinned to 2 CPUs for 2 s); `data_races` +1, unrelated | **FAIL** (informational; cause unknown) | `kcsan-run*/selftest-data_race.log`, `kcsan-stats-*` |
-| 22 | Benchmark matrix | throughput/latency, kq-excl vs kq-all vs FIFO | `run_device_tests.sh --bench` | measurements | 9 configs × 3 reps × 3 targets | **RUN** | `bench/results/20261025-010601/` |
-| 23 | Wake-mode A/B at min capacity | does v2 regress with a 1-record ring? | `scripts/ab_wake.sh 4096 4 4 4096 3` | measurements | v2 slower (§9); 6/6 stress pass | **RUN** | `docs/evidence/ab-min-capacity/` |
+| 22 | Benchmark matrix | throughput/latency, kq-excl vs kq-all vs FIFO | `run_device_tests.sh --bench` | measurements | 9 configs × 3 reps × 3 targets, twice; the 16×1/1×16 throughput gain didn't reproduce (§9) | **RUN** (historical + [AUDIT]) | `bench/results/20261025-010601/`, `bench/results/20261026-200144/` |
+| 23 | Wake-mode A/B at min capacity | does v2 regress with a 1-record ring? | `scripts/ab_wake.sh 4096 4 4 4096 3` | measurements | v2 ≈5× slower in both sessions (§9); 6/6 stress pass each time | **RUN** (historical + [AUDIT]) | `docs/evidence/ab-min-capacity/`, `audit-ab-min-capacity/` |
 | 24 | Soak test | long-duration stability | `KQ_SOAK_SECONDS=N` | | | **NOT RUN** | none |
 | 25 | Rate-limited latency | end-to-end latency on a lightly loaded queue | `kq_bench --rate` | | | **NOT RUN** | none |
 | 26 | Interrupted-after-exclusive-wake path | hand-off on bail-out | none | | | **NOT TESTED** | none |
 | 27 | Other kernels / architectures / bare metal | portability | none | | | **NOT RUN** | none |
+| 28 | Wake mutation check | the 3 exclusive-wake tests can fail | `scripts/wake_mutant_check.sh` | control passes; each mutant's test fails 3/3 | control 3/3 pass; M1, M2, M3 each failed 3/3 | **PASS** [AUDIT] | `docs/evidence/audit-wake-mutant/` |
+| 29 | The 6 audit tests under lockdep/KASAN/KCSAN | sanitizer coverage of the new paths | `run_debug_checks.sh` | | | **NOT RUN** | none |
+| 30 | Kernel log during the mutant and A/B phases | no warnings there | not captured by those scripts | | | **NOT RUN** | none |
 
 ---
 
 ## 9. Benchmarking and performance
 
-**Raw data:** `bench/results/20261025-010601/`. The methodology and the full
-table are in `docs/benchmark_results.md`.
+**Raw data:** `bench/results/20261025-010601/` (historical) and
+`bench/results/20261026-200144/` ([AUDIT] rerun, same script and
+parameters). The methodology and the full tables are in
+`docs/benchmark_results.md`. The validity review is in `FINAL_AUDIT.md` §6.
 
 **Workload and setup:**
 - W writers and R readers; each `write()`/`read()` moves one fixed-size record
@@ -670,34 +716,47 @@ table are in `docs/benchmark_results.md`.
 - end-to-end latency (embedded timestamp)
 - driver sleep counts
 
-**Results** (medians of 3; within-session ranges in `docs/benchmark_results.md`):
+**Results** (read MB/s, medians of 3; within-session ranges in
+`docs/benchmark_results.md`):
 
-| W×R, size | FIFO MB/s | kq-all (v1 behaviour) | kq-excl (v2 default) | Verdict |
-|---|---|---|---|---|
-| 1×1, 64 B | 82.3 | 80.8 | 73.5 | v2 −9% (ranges don't overlap) |
-| 1×1, 512 B | 677.9 | 636.6 | 583.4 | v2 −8% |
-| 1×1, 4096 B | 4432.0 | 4720.3 | 4220.3 | v2 −11% |
-| 4×4, 64 B | 134.7 | 99.5 | 96.1 | v2 −3% |
-| 4×4, 4096 B | 2402.8 | 4705.5 | 4571.5 | tie (overlapping ranges) |
-| 8×8, 512 B | 642.8 | 541.1 | 551.8 | tie |
-| **16×1, 4096 B** | 1100.3 | **150.8** | **401.1** | **v2 2.7×**; writer p99 2975 → 1133 µs |
-| **1×16, 64 B** | 19.1 | **2.2** (33.7k rec/s) | **5.9** (91.6k rec/s) | **v2 2.7×** |
+| W×R, size | [HIST] FIFO | [HIST] kq-all | [HIST] kq-excl | [AUDIT] FIFO | [AUDIT] kq-all | [AUDIT] kq-excl | Verdict |
+|---|---|---|---|---|---|---|---|
+| 1×1, 64 B | 82.3 | 80.8 | 73.5 | 74.9 | 69.6 | 68.9 | v2 slower in both (−9%, −1%) |
+| 1×1, 512 B | 677.9 | 636.6 | 583.4 | 607.7 | 557.3 | 524.1 | v2 slower in both (−8%, −6%) |
+| 1×1, 4096 B | 4432.0 | 4720.3 | 4220.3 | 3743.8 | 4114.1 | 3876.2 | v2 slower in both (−11%, −6%) |
+| 4×4, 64 B | 134.7 | 99.5 | 96.1 | 110.0 | 89.9 | 89.4 | ≈ tie |
+| 4×4, 4096 B | 2402.8 | 4705.5 | 4571.5 | 1863.1 | 3544.3 | 3764.2 | tie (overlapping ranges) |
+| 8×8, 512 B | 642.8 | 541.1 | 551.8 | 357.5 | 396.1 | 469.7 | tie (overlapping ranges) |
+| **16×1, 4096 B** | 1100.3 | **150.8** | **401.1** | 901.3 | **312.4** | **327.4** | **2.7× historically, 1.05× in the audit: not reproducible** |
+| **1×16, 64 B** | 19.1 | **2.2** | **5.9** | 19.6 | **5.7** | **4.9** | **2.7× historically, 0.86× in the audit: not reproducible** |
+
+**What reproduced at 16×1, 4096 B:**
+- writer sleeps: 587,600 → 333,951 historically, 535,960 → 290,550 in the
+  audit (~1.8× fewer)
+- writer `write()` p99: 2974.5 → 1133.0 µs historically, 2266.8 → 1259.9 µs
+  in the audit (2.6× and 1.8×, non-overlapping ranges in both)
+
+The cause of the throughput difference between sessions wasn't determined.
+One factor that can't be excluded: the matrix runs all kq-excl
+configurations, then all kq-all ones, minutes apart (FINAL_AUDIT F11).
 
 **Minimum capacity** (4 KiB ring, 4×4, 4 KiB records; same-session A/B,
-interleaved):
+interleaved). This reproduced:
 
 | | kq-all | kq-excl |
 |---|---|---|
-| Throughput | 482.1 MB/s | **97.3 MB/s** (v2 about 5× slower) |
-| `write()` p50 | 15.9 µs | 166.4 µs |
-| Integrity-checked stress | 3.46–3.66 s | 5.33–5.52 s |
+| Throughput, historical / [AUDIT] | 482.1 / 441.8 MB/s | **97.3 / 85.5 MB/s** (v2 5.0× / 5.2× slower) |
+| `write()` p50, historical / [AUDIT] | 15.9 / 13.6 µs | 166.4 / 191.5 µs |
+| Integrity-checked stress, historical / [AUDIT] | 3.46–3.66 / 3.28–3.42 s | 5.33–5.52 / 6.28–8.27 s |
 
-**Integrity-checked stress timings agree with the 16×1 benchmark result.**
-16×1 took 4.84 s, 4.91 s and 9.50 s (KASAN) with v2, against 29.04 s,
-26.71 s and 39.53 s (KASAN) with wake-all, each pair from the same session.
+**The integrity-checked 16×1 stress runs favour v2 in every session**
+(one run per mode each): 4.84 / 4.91 / [AUDIT] 5.05 s against 29.04 / 26.71
+/ 21.79 s with wake-all on the stock kernel (4.3–6.0×), and 3.6–4.7× on the
+four debug-kernel sessions. The 1×16 stress times have no consistent
+direction: the audit measured 2.54 s with v2 against 1.14 s with wake-all.
 
 **Interpretation.** The following are HYPOTHESES; nothing was profiled:
-- The 8–11% single-producer cost is the extra hand-off wake call (§6).
+- The 1–11% single-producer cost is the extra hand-off wake call (§6).
 - The minimum-capacity regression comes from losing pipelining: each hand-off
   pays an idle-vCPU wake-up latency of about 166 µs p50.
 - Pipes beat KernQueue in the many-to-one cases partly because of
@@ -705,8 +764,9 @@ interleaved):
 
 **Limitations:**
 - One VM. Cross-session variance reached about 2× for the same configuration
-  (1×16 wake-all took 4.30 s in run 1 and 2.33 s in run 2), so only compare
-  numbers from the same session.
+  (1×16 wake-all took 4.30 s in run 1 and 2.33 s in run 2; kq-all 16×1 was
+  150.8 MB/s in one session and 312.4 MB/s in the next), so only compare
+  numbers from the same session, preferably interleaved.
 - Unthrottled end-to-end latency mostly measures queueing (≈ capacity ÷
   throughput).
 - No `--rate` runs. No CPU pinning or frequency control.
@@ -744,9 +804,14 @@ passed, and the sanitizers reported nothing attributable to kernqueue.
     `data_races` nor `races_unknown_origin` moved for that address.
   - HYPOTHESIS: Hyper-V vCPU scheduling of threads spinning in `udelay()`.
   - Mitigation: the mutation check (#20) is the required KCSAN liveness proof.
-- **Performance regressions in v2 (CONFIRMED, measured):**
+- **Performance regressions in v2 (CONFIRMED, measured in two sessions):**
   - about 5× slower when capacity equals the record size
-  - 8–11% slower for a single producer and consumer
+  - 1–11% slower for a single producer and consumer
+- **Non-reproducible benchmark claim (CONFIRMED by the audit, F2):** the
+  earlier "2.7× throughput at 16×1 and 1×16" claim was one session's result.
+  It has been withdrawn from the docs and the résumé text.
+- **Benchmark ordering (F11):** the matrix doesn't interleave the wake modes.
+- **Mutant and A/B scripts don't scan the kernel log (F12).**
 - **Spurious `poll` wake-ups (SUSPECTED, unmeasured):** §6, item 1.
 - **Writer starvation (DESIGN RISK, untested):** a large atomic writer can be
   starved by small writers; the need-aware wake function prefers writers that
@@ -756,6 +821,7 @@ passed, and the sanitizers reported nothing attributable to kernqueue.
 
 **Untested paths:**
 - interrupted-after-exclusive-wake hand-off
+- the 6 audit tests under the debug kernels
 - soak runs, `kq_bench --rate`, standalone `make bench`, `make check-device`
 - `kqctl poll` with a nonzero timeout
 
@@ -921,8 +987,10 @@ bank is in `docs/interview_prep.md`.
 
 **Challenging the performance claims**
 31. *"2.7× faster" compared with what, how many runs, how much variance?*
-    Same-session medians of 3, non-overlapping ranges, a single VM; cross-
-    session variance up to 2×.
+    Same-session medians of 3 with non-overlapping ranges, on a single VM.
+    A second session measured 1.05×, so the claim was withdrawn. What
+    reproduced was the drop in writer sleeps and in p99 latency.
+    Cross-session variance was up to 2×.
 32. *Why is v2 slower for a single producer and much slower at minimum
     capacity?* Hypotheses only (wake-call cost, lost pipelining); not
     profiled.
@@ -936,24 +1004,29 @@ bank is in `docs/interview_prep.md`.
 
 ## 13. Résumé claims
 
-The numbers in these bullets are all VERIFIED; their sources are listed after
-each one. Each bullet should be read with "measured on a WSL2 VM".
+The numbers in these bullets are all VERIFIED, revised by the final audit;
+their sources are listed after each one. Each bullet should be read with
+"measured on a WSL2 VM".
 
 1. *"Built a Linux 6.6 character-device driver (C) exposing a bounded,
    blocking ring-buffer FIFO via read/write/poll/ioctl, with safe partial-fault
    user copies, PIPE_BUF-style atomic writes and a 32-bit-compatible stats
-   ioctl, plus a C test framework (27 functional tests, MPMC integrity stress
-   tests verifying 46M records across 111 runs)."*
+   ioctl, plus a C test framework (33 functional tests, MPMC integrity stress
+   tests verifying 54M records across 133 runs)."*
    - **Evidence:** `driver/kernqueue.c`; `docs/evidence/*/functional-*.log`
      and `stress-*.log`; `compat32.log`; the totals in
      `implementation_status.md`.
 2. *"Diagnosed a thundering-herd bottleneck from driver sleep counters and
    replaced wake-all with need-aware exclusive wake-ups (custom wait-queue wake
-   function plus hand-off): 2.7× higher throughput under 16-writer contention
-   in same-session A/B against a pipe baseline, and documented the trade-off
-   (≈10% slower single-producer, ≈5× slower with a one-record ring)."*
-   - **Evidence:** `bench/results/20261025-010601/`,
-     `docs/evidence/ab-min-capacity/`, and the `stress-*.log` 16×1 timings.
+   function plus hand-off). Under 16-writer contention this cut writer p99
+   latency 1.8–2.6× (two benchmark sessions), and the integrity stress ran
+   4.3–6.0× faster (three sessions). Documented the trade-offs (1–11% slower
+   single-producer, ≈5× slower with a one-record ring)."*
+   - **Evidence:** `bench/results/20261025-010601/` and `20261026-200144/`,
+     `docs/evidence/ab-min-capacity/` and `audit-ab-min-capacity/`, and the
+     `stress-*.log` 16×1 timings.
+   - **Withdrawn:** the earlier "2.7× higher throughput" didn't reproduce
+     (`FINAL_AUDIT.md` F2).
 3. *"Validated the module under custom debug kernels (lockdep +
    DEBUG_ATOMIC_SLEEP + KASAN, and strict KCSAN) with clean full test cycles,
    using deliberate-bug and mutation checks to confirm each checker could see
@@ -967,16 +1040,27 @@ each one. Each bullet should be read with "measured on a WSL2 VM".
 - profiling-backed explanations
 - lockdep and KCSAN together (they were never run in the same kernel)
 - that the KCSAN `data_race` self-test works
+- a throughput multiplier for exclusive wake-ups (session-dependent: 1.05× to
+  2.7× at 16×1)
+- that the 6 audit-added tests ran under a debug kernel
 
 ---
 
 ## 14. Recommended next steps (ranked)
 
+**Added by the final audit; do these first** (`FINAL_AUDIT.md` §8):
+- **A.** Run the 6 audit-added tests under the KASAN/lockdep and KCSAN
+  kernels. They have run only on the stock kernel.
+- **B.** Add a `dmesg` capture and scan to `wake_mutant_check.sh` and
+  `ab_wake.sh` (F12).
+- **C.** Interleave the wake modes in the benchmark matrix, or run
+  `ab_wake.sh` per configuration, before quoting any throughput ratio (F11).
+
 1. **Remove the uncontended wake-up cost.** Wake only on transitions, or skip
    wake calls when the queue has no sleepers (`wq_has_sleeper()`, which
    needs `smp_mb()`). Then re-run `ab_wake.sh` and the benchmark in one
    session.
-   - **Why:** it's the cheapest likely fix for both the 8–11% single-producer
+   - **Why:** it's the cheapest likely fix for both the 1–11% single-producer
      cost and the suspected spurious `poll` wake-ups. Correctness must be
      re-argued and the full device cycle re-run.
 2. **Profile the minimum-capacity regression** on bare metal or in QEMU with
@@ -1015,11 +1099,14 @@ each one. Each bullet should be read with "measured on a WSL2 VM".
 **Completed:** the driver (v2, with the `exclusive_wake` option), the
 user-space tools, every test layer in §8, the benchmark and A/B studies,
 sanitizer validation (lockdep/KASAN, strict KCSAN, mutation check),
-documentation, and the Git history pushed to a private remote.
+documentation, and the Git history pushed to a private remote. Also
+complete: the final audit (`FINAL_AUDIT.md`), with 6 new tests, the wake
+mutation check, a full device rerun and corrected benchmark claims. The audit
+work was uncommitted at the time of writing; check `git status`.
 
-**Unfinished:** see §14. Notably no profiling, no other platforms, no soak,
-no rate-limited latency run, an unexplained KCSAN self-test, and known v2
-performance trade-offs.
+**Unfinished:** see §14. Notably the audit tests under debug kernels, no
+profiling, no other platforms, no soak, no rate-limited latency run, an
+unexplained KCSAN self-test, and known v2 performance trade-offs.
 
 **Inspect first, in this order:**
 1. `driver/kernqueue.c` (`kq_read` `:300`, `kq_write` `:348`, the wake
@@ -1028,11 +1115,13 @@ performance trade-offs.
 3. `include/kernqueue.h`
 4. `docs/design.md` §4
 5. `docs/implementation_status.md`
-6. `tests/test_functional.c` (test table `:989`)
+6. `tests/test_functional.c` (test table `:1225`)
 7. `scripts/run_device_tests.sh`
 8. `docs/benchmark_results.md`
+9. `docs/FINAL_AUDIT.md` (findings F1–F12, §6 benchmark validity)
 
-**Do next:** recommendation #1, keeping the A/B methodology:
+**Do next:** items A–C in §14, then recommendation #1, keeping the A/B
+methodology:
 - same session, interleaved
 - medians with ranges
 - full device cycle afterwards

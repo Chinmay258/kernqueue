@@ -1,0 +1,7 @@
+make: Entering directory '<home>/kq-kbuild/linux'
+  CC [M]  <home>/.cache/kernqueue-wake-M2/driver/kernqueue.o
+  MODPOST <home>/.cache/kernqueue-wake-M2/driver/Module.symvers
+  CC [M]  <home>/.cache/kernqueue-wake-M2/driver/kernqueue.mod.o
+  LD [M]  <home>/.cache/kernqueue-wake-M2/driver/kernqueue.ko
+  BTF [M] <home>/.cache/kernqueue-wake-M2/driver/kernqueue.ko
+make: Leaving directory '<home>/kq-kbuild/linux'

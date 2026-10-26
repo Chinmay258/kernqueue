@@ -1,0 +1,3 @@
+test_functional: device /dev/kernqueue, exclusive_wake=Y
+PASS     wake_hands_on_to_next_writer            3.5 ms
+SUMMARY: 1 run, 1 passed, 0 failed

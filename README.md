@@ -136,7 +136,9 @@ Details, debugging tools and what each layer proves: [docs/testing.md](docs/test
 * Verified on one kernel (6.6, WSL2, x86-64) only, plus two debug builds of
   it: lockdep + DEBUG_ATOMIC_SLEEP + KASAN, and strict KCSAN. The full test
   cycle was clean under both; a KCSAN mutation check confirmed KCSAN catches
-  kernqueue's own bug class. See docs/testing.md.
+  kernqueue's own bug class. See docs/testing.md. The 6 functional tests added
+  by the final audit have run only on the stock kernel.
+* Not production software, and not security-audited.
 
 ## Documentation
 
@@ -145,6 +147,8 @@ Details, debugging tools and what each layer proves: [docs/testing.md](docs/test
 * [docs/testing.md](docs/testing.md): test layers, debugging tools
 * [docs/implementation_status.md](docs/implementation_status.md): what is verified
 * [docs/benchmark_results.md](docs/benchmark_results.md): measured results, methodology and trade-offs
+* [docs/FINAL_AUDIT.md](docs/FINAL_AUDIT.md): final engineering audit (findings, reruns, defensible claims)
+* [docs/PROJECT_STATUS.md](docs/PROJECT_STATUS.md) and [docs/PROJECT_HANDOFF.md](docs/PROJECT_HANDOFF.md): status and full technical handoff
 * [docs/evidence/](docs/evidence/): raw logs behind every reported result
 * [docs/interview_prep.md](docs/interview_prep.md): likely questions and résumé text
 

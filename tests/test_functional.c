@@ -11,6 +11,7 @@
 #include <fcntl.h>
 #include <poll.h>
 #include <pthread.h>
+#include <sched.h>
 #include <signal.h>
 #include <stdatomic.h>
 #include <stdint.h>
@@ -19,6 +20,8 @@
 #include <string.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
+#include <sys/prctl.h>
+#include <sys/wait.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -983,6 +986,240 @@ static void t_shared_and_persistent(void)
 	close(c);
 }
 
+/* RESET discards data; it must neither wake a blocked reader nor feed it stale bytes. */
+static void t_reset_keeps_reader_blocked(void)
+{
+	int fd = fresh(O_RDWR);
+	struct io_thread t = { .fd = fd, .len = 64 };
+
+	start_thread(&t, reader_main);
+	WAIT_STAT_GE(fd, read_waits, 1);
+	KQ_CHECK_EQ(ioctl(fd, KQ_IOC_RESET), 0);
+	kq_sleep_ms(50);
+	KQ_CHECK(!atomic_load(&t.done));
+	KQ_CHECK_EQ(write(fd, "n", 1), 1);
+	join_within(&t, 2000);
+	KQ_CHECK_EQ(t.ret, 1);
+	KQ_CHECK_EQ(t.buf[0], 'n');
+	close(fd);
+}
+
+/* RESET frees the whole ring, so a poll() waiting for POLLOUT must wake. */
+static void t_reset_wakes_poll_writer(void)
+{
+	int fd = fresh(O_RDWR | O_NONBLOCK);
+	struct poll_thread p = { .fd = fd, .events = POLLOUT };
+	uint64_t acted;
+
+	fill_to(fd, g_cap);
+	KQ_CHECK(pthread_create(&p.tid, NULL, poller_main, &p) == 0);
+	kq_sleep_ms(100);
+	acted = kq_now_ns();
+	KQ_CHECK_EQ(ioctl(fd, KQ_IOC_RESET), 0);
+	KQ_CHECK(pthread_join(p.tid, NULL) == 0);
+	KQ_CHECK_EQ(p.ret, 1);
+	KQ_CHECK(p.revents & POLLOUT);
+	KQ_CHECK(p.entered_ns < acted && p.returned_ns >= acted);
+	close(fd);
+}
+
+/*
+ * The POLLOUT transition: a waiter must stay in poll() while reads leave fewer
+ * than KQ_ATOMIC_MAX bytes free, and return once that threshold is reached.
+ */
+static void t_poll_out_threshold(void)
+{
+	int fd = fresh(O_RDWR | O_NONBLOCK);
+	struct poll_thread p = { .fd = fd, .events = POLLOUT };
+	uint64_t acted;
+
+	fill_to(fd, g_cap);
+	KQ_CHECK(pthread_create(&p.tid, NULL, poller_main, &p) == 0);
+	kq_sleep_ms(100);
+	drain(fd, KQ_ATOMIC_MAX - 1);		/* KQ_ATOMIC_MAX - 1 bytes free */
+	kq_sleep_ms(100);
+	KQ_CHECK_EQ(pthread_tryjoin_np(p.tid, NULL), EBUSY);	/* still in poll() */
+	acted = kq_now_ns();
+	drain(fd, 1);				/* exactly KQ_ATOMIC_MAX free */
+	KQ_CHECK(pthread_join(p.tid, NULL) == 0);
+	KQ_CHECK_EQ(p.ret, 1);
+	KQ_CHECK(p.revents & POLLOUT);
+	KQ_CHECK(p.returned_ns >= acted);
+	close(fd);
+}
+
+/*
+ * A process killed while blocked must be reaped promptly (the sleep is
+ * interruptible, not D state), release() must run for its file, and the
+ * queue must still serve the next blocked caller.
+ */
+static void killed_while_blocked(bool in_write)
+{
+	int fd = fresh(O_RDWR);
+	uint64_t deadline;
+	int status = 0;
+	pid_t pid;
+
+	if (in_write)
+		fill_to(fd, g_cap);
+	pid = fork();
+	KQ_CHECK(pid >= 0);
+	if (pid == 0) {
+		char buf[16] = { 0 };
+		int cfd;
+
+		prctl(PR_SET_PDEATHSIG, SIGKILL);
+		cfd = open(kq_device_path(), O_RDWR);
+		if (cfd >= 0 && in_write)
+			(void)!write(cfd, buf, sizeof(buf));
+		else if (cfd >= 0)
+			(void)!read(cfd, buf, sizeof(buf));
+		_exit(0);	/* only reached if the call returned */
+	}
+	if (in_write)
+		WAIT_STAT_GE(fd, write_waits, 1);
+	else
+		WAIT_STAT_GE(fd, read_waits, 1);
+	KQ_CHECK_EQ(dev_stats(fd).open_files, 2);
+
+	KQ_CHECK(kill(pid, SIGKILL) == 0);
+	deadline = kq_now_ns() + 2000000000ULL;
+	while (waitpid(pid, &status, WNOHANG) != pid) {
+		if (kq_now_ns() > deadline)
+			KQ_FAIL("child blocked in %s was not reaped within 2 s after SIGKILL",
+				in_write ? "write" : "read");
+		kq_sleep_ms(1);
+	}
+	KQ_CHECK(WIFSIGNALED(status) && WTERMSIG(status) == SIGKILL);
+	KQ_CHECK_EQ(dev_stats(fd).open_files, 1);
+
+	struct io_thread t = { .fd = fd, .len = in_write ? 10 : 1 };
+
+	if (in_write) {
+		memset(t.buf, 'w', 10);
+		start_thread(&t, writer_main);
+		WAIT_STAT_GE(fd, write_waits, 2);
+		drain(fd, 100);
+	} else {
+		start_thread(&t, reader_main);
+		WAIT_STAT_GE(fd, read_waits, 2);
+		KQ_CHECK_EQ(write(fd, "k", 1), 1);
+	}
+	join_within(&t, 2000);
+	KQ_CHECK_EQ(t.ret, in_write ? 10 : 1);
+	close(fd);
+}
+
+static void t_killed_blocked_reader(void)
+{
+	killed_while_blocked(false);
+}
+
+static void t_killed_blocked_writer(void)
+{
+	killed_while_blocked(true);
+}
+
+/*
+ * RESET racing with active I/O: 4 writers and 4 readers move 64-byte records
+ * (non-blocking) while another thread resets every millisecond for 1 s.
+ * Resets discard whole records, so delivery is not checked, but every record
+ * read must be intact and every read exactly one record long.
+ */
+#define LOAD_REC 64
+
+struct load_ctx {
+	int fd;
+	atomic_bool stop;
+	atomic_ulong records, corrupt, bad_len, errors;
+};
+
+static void *load_writer(void *arg)
+{
+	struct load_ctx *c = arg;
+	uint8_t rec[LOAD_REC];
+	uint64_t seq = 0;
+
+	while (!atomic_load(&c->stop)) {
+		kq_rec_build(rec, LOAD_REC, 0, seq, 0);
+		ssize_t r = write(c->fd, rec, LOAD_REC);
+
+		if (r == LOAD_REC)
+			seq++;
+		else if (r == -1 && errno == EAGAIN)
+			sched_yield();
+		else
+			atomic_fetch_add(&c->errors, 1);
+	}
+	return NULL;
+}
+
+static void *load_reader(void *arg)
+{
+	struct load_ctx *c = arg;
+	uint8_t rec[LOAD_REC];
+
+	while (!atomic_load(&c->stop)) {
+		ssize_t r = read(c->fd, rec, LOAD_REC);
+
+		if (r == LOAD_REC) {
+			atomic_fetch_add(&c->records, 1);
+			if (kq_rec_verify(rec, LOAD_REC))
+				atomic_fetch_add(&c->corrupt, 1);
+		} else if (r == -1 && errno == EAGAIN) {
+			sched_yield();
+		} else if (r >= 0) {
+			atomic_fetch_add(&c->bad_len, 1);
+		} else {
+			atomic_fetch_add(&c->errors, 1);
+		}
+	}
+	return NULL;
+}
+
+static void *load_resetter(void *arg)
+{
+	struct load_ctx *c = arg;
+
+	while (!atomic_load(&c->stop)) {
+		if (ioctl(c->fd, KQ_IOC_RESET))
+			atomic_fetch_add(&c->errors, 1);
+		kq_sleep_ms(1);
+	}
+	return NULL;
+}
+
+static void t_reset_under_load(void)
+{
+	int fd = fresh(O_RDWR | O_NONBLOCK);
+	struct load_ctx c = { .fd = fd };
+	pthread_t th[9];
+	struct kq_stats st;
+	int i;
+
+	for (i = 0; i < 4; i++)
+		KQ_CHECK(pthread_create(&th[i], NULL, load_writer, &c) == 0);
+	for (i = 4; i < 8; i++)
+		KQ_CHECK(pthread_create(&th[i], NULL, load_reader, &c) == 0);
+	KQ_CHECK(pthread_create(&th[8], NULL, load_resetter, &c) == 0);
+	kq_sleep_ms(1000);
+	atomic_store(&c.stop, true);
+	for (i = 0; i < 9; i++)
+		KQ_CHECK(pthread_join(th[i], NULL) == 0);
+
+	st = dev_stats(fd);
+	KQ_CHECK_EQ(atomic_load(&c.corrupt), 0);
+	KQ_CHECK_EQ(atomic_load(&c.bad_len), 0);
+	KQ_CHECK_EQ(atomic_load(&c.errors), 0);
+	KQ_CHECK(atomic_load(&c.records) > 0);
+	KQ_CHECK(st.resets >= 100);
+	KQ_CHECK(st.used % LOAD_REC == 0 && st.used <= st.capacity);
+	KQ_CHECK(st.bytes_read <= st.bytes_written);
+	KQ_CHECK_EQ(ioctl(fd, KQ_IOC_RESET), 0);
+	KQ_CHECK_EQ(dev_stats(fd).used, 0);
+	close(fd);
+}
+
 int main(int argc, char **argv)
 {
 	static const struct kq_test_case tests[] = {
@@ -1013,6 +1250,12 @@ int main(int argc, char **argv)
 		{ "wake_hands_on_to_next_reader", t_wake_hands_on_to_next_reader, 0 },
 		{ "wake_hands_on_to_next_writer", t_wake_hands_on_to_next_writer, 0 },
 		{ "shared_and_persistent", t_shared_and_persistent, 0 },
+		{ "reset_keeps_reader_blocked", t_reset_keeps_reader_blocked, 0 },
+		{ "reset_wakes_poll_writer", t_reset_wakes_poll_writer, 0 },
+		{ "poll_out_threshold", t_poll_out_threshold, 0 },
+		{ "killed_blocked_reader", t_killed_blocked_reader, 0 },
+		{ "killed_blocked_writer", t_killed_blocked_writer, 0 },
+		{ "reset_under_load", t_reset_under_load, 20000 },
 	};
 	FILE *f = fopen("/sys/module/kernqueue/parameters/exclusive_wake", "r");
 	int mode = f ? fgetc(f) : '?';

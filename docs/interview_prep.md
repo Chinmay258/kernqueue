@@ -54,15 +54,20 @@ the notes. Each answer is backed by a specific line of code or a test.
     plain wake-one would starve a small writer behind a big one (the
     `wake_skips_unfit_writer` test), and where exclusive wake-ups do *not*
     help. With the ring holding one record, they were ~5× slower in a
-    same-session A/B (97 vs 482 MB/s). Likely cause: no pipelining, so each
+    same-session A/B (97 vs 482 MB/s; 86 vs 442 MB/s when re-run in a
+    second session). Likely cause: no pipelining, so each
     hand-off pays an idle-vCPU wake-up. Wake-all keeps more tasks runnable.
     That's a hypothesis, not profiled.
 10b. **How did you make sure your before/after numbers were trustworthy?**
     Kept the old behaviour behind a parameter so both variants run in the same
-    session. Interleaved the variants in each repetition. Reported medians
+    session. Interleaved the variants in each repetition in the A/B script
+    (the full matrix runs them in two blocks, minutes apart). Reported medians
     with min–max ranges. Called a difference real only when ranges didn't
-    overlap. Noted that cross-session variance in the VM was up to ~2× for the
-    same configuration.
+    overlap. Then **re-ran everything in a second session**. The 16×1
+    throughput gain went from 2.7× to 1.05×, so it was withdrawn. The
+    sleep-count and tail-latency reductions, the stress-run speed-up and the
+    minimum-capacity loss reproduced. Lesson: one session's non-overlapping
+    ranges don't make a result reproducible.
 11. **What happens if a user passes a `userfaultfd`-backed buffer to `read()`?**
     The copy blocks while holding the mutex and stalls every other client. The
     fix is a bounce buffer (copy outside the lock) at the cost of an extra copy.
@@ -128,7 +133,9 @@ the notes. Each answer is backed by a specific line of code or a test.
     asleep in the driver, then act.
 27. **How do you know your tests can fail?** Mutants of `kq_ring.h` were
     killed. `test_stress --inject dup|skip|corrupt|split` must be detected.
-    Both were demonstrated.
+    `scripts/wake_mutant_check.sh` removes the writer need filter, the reader
+    hand-off or the writer hand-off from the real driver, and each targeted
+    test must fail 3 times out of 3. All of these were demonstrated.
 28. **How does the stress test detect lost, duplicated, reordered or corrupted
     data?** Sequence numbers, checksums, regenerated payloads, per-reader
     monotonicity, an atomic seen-bitmap, a final sweep, and cross-checks
@@ -194,29 +201,34 @@ numbers.
   ring-buffer FIFO through `read`/`write`/`poll`/`ioctl`. It handles user
   copies safely (partial faults, `EFAULT`), `O_NONBLOCK`, signal-restartable
   waits, PIPE_BUF-style atomic writes and an ABI-stable statistics ioctl.
-* Found a thundering-herd bottleneck through instrumented stress tests, and
-  fixed it with exclusive, need-aware wake-ups (custom wait-queue wake
-  function plus hand-off). That raised 16-writer/1-reader throughput 2.7×
-  (151 → 401 MB/s) and cut writer p99 latency 2.6×. Benchmarked against Linux
-  pipes and documented where the change is slower (~10% single-producer; ~5×
-  when the ring holds a single record) via same-session A/B runs.
-* Wrote a C test framework: 27 functional tests with fork-per-test timeouts
+* Found a thundering-herd bottleneck through driver sleep counters, and
+  replaced wake-all with exclusive, need-aware wake-ups (custom wait-queue
+  wake function plus hand-off). With 16 writers and 1 reader this cut writer
+  sleeps ~1.8× and writer p99 latency 1.8–2.6× in two benchmark sessions, and
+  the 16-writer integrity stress ran 4.3–6.0× faster in three sessions.
+  Benchmarked against Linux pipes and documented where the change is slower
+  (1–11% single-producer; ~5× when the ring holds a single record).
+* Wrote a C test framework: 33 functional tests with fork-per-test timeouts
   and guard-page fault injection, multi-producer/multi-consumer integrity
-  tests (46M records verified across 111 runs), a 32-bit compat-ABI test,
-  sparse, user-space sanitizers (ASan/UBSan/TSan) and fault-injection checks
-  that prove the tests can fail.
+  tests (54M records verified across 133 runs), a 32-bit compat-ABI test,
+  sparse, user-space sanitizers (ASan/UBSan/TSan), and fault-injection and
+  mutation checks that prove the tests can fail.
 * Validated the driver under two custom debug kernels (lockdep +
   DEBUG_ATOMIC_SLEEP + KASAN, and strict KCSAN): clean full test cycles.
   Deliberate-bug and mutation checks confirmed each checker could see
-  kernqueue, e.g. KCSAN flagged 15 races in a mutant that passed every
-  functional test.
+  kernqueue, e.g. KCSAN flagged 15 races in a mutant whose integrity stress
+  runs all passed.
 * Reproduced a matching vendor kernel build tree for WSL2, with config-diff
   checks and symbol-CRC verification against shipped modules, to build and
   load the module safely.
 
 Shorter one-liner: *Linux char driver (ring-buffer FIFO, blocking/poll/ioctl)
 with a C stress/benchmark suite; fixed a thundering herd with need-aware
-exclusive wake-ups (2.7× throughput under 16-way contention).*
+exclusive wake-ups (writer p99 latency 1.8–2.6× lower under 16-way
+contention).*
+
+Don't quote the earlier "2.7× throughput" figure: it came from one session
+and didn't reproduce (see benchmark_results.md).
 
 Measured on a WSL2 VM (Ryzen 7 5800H). Say so if asked; don't present these
 as bare-metal numbers.

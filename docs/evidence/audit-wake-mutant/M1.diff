@@ -1,0 +1,11 @@
+--- driver/kernqueue.c	2026-10-25 00:55:34.898788500 +0000
++++ <home>/.cache/kernqueue-wake-M1/driver/kernqueue.c	2026-10-26 20:10:04.735579251 +0000
+@@ -161,7 +161,7 @@
+ {
+ 	struct kq_writer_wait *w = container_of(wq, struct kq_writer_wait, wq);
+ 
+-	if (!kq_has_space(w->dev, w->need))
++	if (0)
+ 		return 0;
+ 	return autoremove_wake_function(wq, mode, flags, key);
+ }

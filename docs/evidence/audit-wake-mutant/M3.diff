@@ -1,0 +1,11 @@
+--- driver/kernqueue.c	2026-10-25 00:55:34.898788500 +0000
++++ <home>/.cache/kernqueue-wake-M3/driver/kernqueue.c	2026-10-26 20:10:18.991515904 +0000
+@@ -130,7 +130,7 @@
+ 
+ static void kq_pass_on_writers(struct kq_dev *dev)
+ {
+-	if (exclusive_wake && kq_has_space(dev, 1))
++	if (0)
+ 		kq_wake_writers(dev);
+ }
+ 

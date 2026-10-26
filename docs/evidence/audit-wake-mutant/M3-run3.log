@@ -1,0 +1,4 @@
+test_functional: device /dev/kernqueue, exclusive_wake=Y
+    tests/test_functional.c:262: thread did not finish within 2000 ms (Connection timed out)
+FAIL     wake_hands_on_to_next_writer      
+SUMMARY: 1 run, 0 passed, 1 failed

@@ -1,0 +1,6 @@
+kq-excl: test_stress: PASS 200000 records (781.2 MiB) in 6.28 s, 4x4, 4096 B, blocking, waits r/w 142606/143969, eagain r/w 0/0
+kq-all: test_stress: PASS 200000 records (781.2 MiB) in 3.42 s, 4x4, 4096 B, blocking, waits r/w 113275/112032, eagain r/w 0/0
+kq-excl: test_stress: PASS 200000 records (781.2 MiB) in 6.53 s, 4x4, 4096 B, blocking, waits r/w 143877/144083, eagain r/w 0/0
+kq-all: test_stress: PASS 200000 records (781.2 MiB) in 3.28 s, 4x4, 4096 B, blocking, waits r/w 109501/112709, eagain r/w 0/0
+kq-excl: test_stress: PASS 200000 records (781.2 MiB) in 8.27 s, 4x4, 4096 B, blocking, waits r/w 158485/158229, eagain r/w 0/0
+kq-all: test_stress: PASS 200000 records (781.2 MiB) in 3.28 s, 4x4, 4096 B, blocking, waits r/w 110173/110366, eagain r/w 0/0

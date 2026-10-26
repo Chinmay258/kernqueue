@@ -1,0 +1,11 @@
+--- driver/kernqueue.c	2026-10-25 00:55:34.898788500 +0000
++++ <home>/.cache/kernqueue-wake-M2/driver/kernqueue.c	2026-10-26 20:10:11.235131355 +0000
+@@ -124,7 +124,7 @@
+  */
+ static void kq_pass_on_readers(struct kq_dev *dev)
+ {
+-	if (exclusive_wake && kq_has_data(dev))
++	if (0)
+ 		kq_wake_readers(dev);
+ }
+ 

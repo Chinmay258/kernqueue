@@ -1,0 +1,15 @@
+make: Entering directory '<home>/kq-kbuild/linux'
+make[2]: Warning: File '<home>/.cache/kernqueue-wake-M1/driver/Kbuild' has modification time 0.6 s in the future
+  CC [M]  <home>/.cache/kernqueue-wake-M1/driver/kernqueue.o
+<home>/.cache/kernqueue-wake-M1/driver/kernqueue.c: In function ‘kq_writer_wake’:
+<home>/.cache/kernqueue-wake-M1/driver/kernqueue.c:162:32: warning: unused variable ‘w’ [-Wunused-variable]
+  162 |         struct kq_writer_wait *w = container_of(wq, struct kq_writer_wait, wq);
+      |                                ^
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+make[2]: Warning: File '<home>/.cache/kernqueue-wake-M1/driver/Kbuild' has modification time 0.091 s in the future
+  MODPOST <home>/.cache/kernqueue-wake-M1/driver/Module.symvers
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+  CC [M]  <home>/.cache/kernqueue-wake-M1/driver/kernqueue.mod.o
+  LD [M]  <home>/.cache/kernqueue-wake-M1/driver/kernqueue.ko
+  BTF [M] <home>/.cache/kernqueue-wake-M1/driver/kernqueue.ko
+make: Leaving directory '<home>/kq-kbuild/linux'
